@@ -59,21 +59,20 @@ services:
     networks:
       - app_network
 
-  # TODO - VICTOR
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   container_name: frontend_app
-  #   restart: always
-  #   ports:
-  #     - "3002:3002"
-  #   environment:
-  #     NEXT_PUBLIC_BACKEND_URL: http://localhost:3001
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - app_network
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend_app
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:3001
+    depends_on:
+      - backend
+    networks:
+      - app_network
 
 volumes:
   pgdata:
