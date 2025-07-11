@@ -164,3 +164,11 @@ export const AuthService = {
   verify: (token?: string) => 
     ApiClient.get(API_CONFIG.ENDPOINTS.AUTH.VERIFY, true, true, token),
 };
+
+export const ObrasService = {
+  getAll: (token?: string) => ApiClient.get(API_CONFIG.ENDPOINTS.OBRAS, true, false, token),
+  getById: (id: string, token?: string) => ApiClient.get(`${API_CONFIG.ENDPOINTS.OBRAS}/${id}`, true, false, token),
+  create: (data: any, token?: string) => ApiClient.post(API_CONFIG.ENDPOINTS.OBRAS, data, true, false, token),
+  update: (id: string, data: any, token?: string) => ApiClient.put(`${API_CONFIG.ENDPOINTS.OBRAS}/${id}`, data, true, false, token),
+  delete: (id: string, token?: string) => ApiClient.delete(`${API_CONFIG.ENDPOINTS.OBRAS}/${id}`, true, false, token),
+};
