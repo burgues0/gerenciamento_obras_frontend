@@ -50,6 +50,38 @@ export class ApiClient {
         } catch (jsonError) {
           errorData = {};
         }
+        
+        let errorMessage = errorData.message || 
+                          errorData.error || 
+                          errorData.msg || 
+                          errorData.detail || 
+                          errorData.description ||
+                          errorData.mensagem;
+        
+        if (!errorMessage) {
+          switch (response.status) {
+            case 401:
+              errorMessage = "Credenciais inválidas";
+              break;
+            case 403:
+              errorMessage = "Acesso negado";
+              break;
+            case 404:
+              errorMessage = "Recurso não encontrado";
+              break;
+            case 500:
+              errorMessage = "Erro interno do servidor";
+              break;
+            default:
+              errorMessage = `Erro HTTP ${response.status}`;
+          }
+        }
+        
+        const error = new Error(errorMessage);
+        (error as any).status = response.status;
+        (error as any).statusText = response.statusText;
+        (error as any).data = errorData;
+        throw error;
       }
 
       return response.json();
@@ -63,4 +95,72 @@ export class ApiClient {
     }
   }
 
+  static async get(endpoint: string, includeAuth = true, isAuthEndpoint = false, token?: string) {
+    const baseUrl = this.getBaseUrl(isAuthEndpoint);
+    const fetchOptions: RequestInit = {
+      method: 'GET',
+      headers: this.getHeaders(includeAuth, token),
+    };
+    if (includeAuth && !token) {
+      fetchOptions.credentials = 'include';
+    }
+    const response = await fetch(`${baseUrl}${endpoint}`, fetchOptions);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Erro na requisição');
+    }
+
+    return response.json();
+  }
+
+  static async put(endpoint: string, data: any, includeAuth = true, isAuthEndpoint = false, token?: string) {
+    const baseUrl = this.getBaseUrl(isAuthEndpoint);
+    const fetchOptions: RequestInit = {
+      method: 'PUT',
+      headers: this.getHeaders(includeAuth, token),
+      body: JSON.stringify(data),
+    };
+    if (includeAuth && !token) {
+      fetchOptions.credentials = 'include';
+    }
+    const response = await fetch(`${baseUrl}${endpoint}`, fetchOptions);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Erro na requisição');
+    }
+
+    return response.json();
+  }
+
+  static async delete(endpoint: string, includeAuth = true, isAuthEndpoint = false, token?: string) {
+    const baseUrl = this.getBaseUrl(isAuthEndpoint);
+    const fetchOptions: RequestInit = {
+      method: 'DELETE',
+      headers: this.getHeaders(includeAuth, token),
+    };
+    if (includeAuth && !token) {
+      fetchOptions.credentials = 'include';
+    }
+    const response = await fetch(`${baseUrl}${endpoint}`, fetchOptions);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Erro na requisição');
+    }
+
+    return response.json();
+  }
 }
+
+export const AuthService = {
+  login: (email: string, senha: string) => 
+    ApiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, { email, senha }, false, true),
+  
+  logout: (token?: string) => 
+    ApiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT, {}, true, true, token),
+  
+  verify: (token?: string) => 
+    ApiClient.get(API_CONFIG.ENDPOINTS.AUTH.VERIFY, true, true, token),
+};
