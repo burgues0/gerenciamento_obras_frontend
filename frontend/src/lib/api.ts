@@ -131,7 +131,18 @@ export class ApiClient {
       throw new Error(errorData.message || 'Erro na requisição');
     }
 
-    return response.json();
+    const contentType = response.headers.get('content-type');
+    const contentLength = response.headers.get('content-length');
+    
+    if (!contentType?.includes('application/json') || contentLength === '0' || response.status === 204) {
+      return;
+    }
+
+    try {
+      return await response.json();
+    } catch {
+      return;
+    }
   }
 
   static async delete(endpoint: string, includeAuth = true, isAuthEndpoint = false, token?: string) {
@@ -150,7 +161,49 @@ export class ApiClient {
       throw new Error(errorData.message || 'Erro na requisição');
     }
 
-    return response.json();
+    const contentType = response.headers.get('content-type');
+    const contentLength = response.headers.get('content-length');
+    
+    if (!contentType?.includes('application/json') || contentLength === '0' || response.status === 204) {
+      return;
+    }
+
+    try {
+      return await response.json();
+    } catch {
+      return;
+    }
+  }
+
+  static async patch(endpoint: string, data: any, includeAuth = true, isAuthEndpoint = false, token?: string) {
+    const baseUrl = this.getBaseUrl(isAuthEndpoint);
+    
+    try {
+      const fetchOptions: RequestInit = {
+        method: 'PATCH',
+        headers: this.getHeaders(includeAuth, token),
+        body: JSON.stringify(data),
+      };
+      if (includeAuth && !token) {
+        fetchOptions.credentials = 'include';
+      }
+      const response = await fetch(`${baseUrl}${endpoint}`, fetchOptions);
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+        }
+        throw new Error(errorData.message || 'Erro na requisição');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Erro na requisição PATCH:', error);
+      throw error;
+    }
   }
 }
 
@@ -171,4 +224,12 @@ export const ObrasService = {
   create: (data: any, token?: string) => ApiClient.post(API_CONFIG.ENDPOINTS.OBRAS, data, true, false, token),
   update: (id: string, data: any, token?: string) => ApiClient.put(`${API_CONFIG.ENDPOINTS.OBRAS}/${id}`, data, true, false, token),
   delete: (id: string, token?: string) => ApiClient.delete(`${API_CONFIG.ENDPOINTS.OBRAS}/${id}`, true, false, token),
+};
+
+export const EquipamentosService = {
+  getAll: (token?: string) => ApiClient.get(API_CONFIG.ENDPOINTS.EQUIPAMENTOS, true, false, token),
+  getById: (id: string, token?: string) => ApiClient.get(`${API_CONFIG.ENDPOINTS.EQUIPAMENTOS}/${id}`, true, false, token),
+  create: (data: any, token?: string) => ApiClient.post(API_CONFIG.ENDPOINTS.EQUIPAMENTOS, data, true, false, token),
+  update: (id: string, data: any, token?: string) => ApiClient.put(`${API_CONFIG.ENDPOINTS.EQUIPAMENTOS}/${id}`, data, true, false, token),
+  delete: (id: string, token?: string) => ApiClient.delete(`${API_CONFIG.ENDPOINTS.EQUIPAMENTOS}/${id}`, true, false, token),
 };
