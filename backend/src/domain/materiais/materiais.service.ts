@@ -51,7 +51,7 @@ export class MateriaisService {
     // Valida propriedades permitidas
     const allowedProperties = ['nome', 'codigo', 'unidadeMedida', 'descricao', 'precoUnitario', 'fabricante', 'modelo', 'ativo'];
     const invalidProperties = Object.keys(input).filter(
-        prop => !allowedProperties.includes(prop)
+      (prop) => !allowedProperties.includes(prop),
     );
 
     if (invalidProperties.length > 0) {

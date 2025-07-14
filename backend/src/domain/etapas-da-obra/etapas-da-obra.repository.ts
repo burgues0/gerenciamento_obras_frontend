@@ -12,14 +12,14 @@ export class EtapasDaObraRepository {
     private readonly etapaObraModel: typeof EtapasDaObra,
 
     @InjectModel(Obras)
-      private readonly obraModel: typeof Obras,
+    private readonly obraModel: typeof Obras,
   ) {}
 
   async create(data: CreateEtapasDaObraDto): Promise<EtapasDaObra> {
     return this.etapaObraModel.create(data as any);
   }
 
-    async checkObraExists(obraId: number): Promise<boolean> {
+  async checkObraExists(obraId: number): Promise<boolean> {
     const count = await this.obraModel.count({ where: { id: obraId } });
     return count > 0;
   }

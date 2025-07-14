@@ -10,7 +10,7 @@ export class DocumentValidatorService {
     // Rejeita CPFs com todos os dígitos iguais
     if (/^(\d)\1+$/.test(cleaned)) return false;
 
-    const cpfArray = cleaned.split('').map(d => parseInt(d, 10));
+    const cpfArray = cleaned.split('').map((d) => parseInt(d, 10));
 
     // Valida primeiro dígito verificador
     let soma = 0;
@@ -41,9 +41,12 @@ export class DocumentValidatorService {
     // Rejeita CNPJs com todos os dígitos iguais
     if (/^(\d)\1+$/.test(cleaned)) return false;
 
-    const cnpjArray = cleaned.split('').map(d => parseInt(d, 10));
+    const cnpjArray = cleaned.split('').map((d) => parseInt(d, 10));
 
-    const validarDigito = (posicoes: number[], digitoIndex: number): boolean => {
+    const validarDigito = (
+      posicoes: number[],
+      digitoIndex: number,
+    ): boolean => {
       let soma = 0;
       let peso = posicoes.length - 7;
 
@@ -74,5 +77,13 @@ export class DocumentValidatorService {
 
   validarCnpjFormatado(cnpj: string): boolean {
     return /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(cnpj);
+  }
+
+  formatarCpf(cpf: string): string {
+    const cleaned = cpf.replace(/[^\d]/g, '');
+    if (cleaned.length !== 11) {
+      throw new BadRequestException('CPF deve conter exatamente 11 dígitos');
+    }
+    return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-${cleaned.slice(9, 11)}`;
   }
 }
