@@ -40,7 +40,7 @@ export default function ObraEdit() {
     setError(null);
     try {
       await ObrasService.update(obraId, data);
-      router.push(`/obras/${obraId}`);
+      router.push("/obras");
     } catch (err: any) {
       setError(err.message || "Erro ao atualizar obra.");
     } finally {
