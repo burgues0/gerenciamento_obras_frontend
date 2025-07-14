@@ -1,0 +1,230 @@
+import { API_CONFIG } from "@/lib/config";
+import { ResponsavelTecnico, CreateResponsavelTecnicoDto, UpdateResponsavelTecnicoDto, Obra, CreateVinculosObrasDto } from "@/types/responsaveis-tecnicos";
+
+function authHeaders(): HeadersInit {
+  const token = localStorage.getItem("auth-token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export const responsaveisTecnicosService = {
+  async getAllResponsaveisTecnicos(): Promise<ResponsavelTecnico[]> {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}`, {
+      credentials: "include",
+      headers: {
+        ...authHeaders(),
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Falha ao listar responsáveis técnicos.");
+    }
+    return response.json();
+  },
+
+  async getResponsavelTecnicoById(id: number): Promise<ResponsavelTecnico> {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}/${id}`, {
+      credentials: "include",
+      headers: {
+        ...authHeaders(),
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Falha ao buscar responsável técnico.");
+    }
+    return response.json();
+  },
+
+  async createResponsavelTecnico(responsavel: CreateResponsavelTecnicoDto): Promise<ResponsavelTecnico> {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+      body: JSON.stringify(responsavel),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: `Erro HTTP ${response.status}` }));
+      throw new Error(errorData.message || "Falha ao criar responsável técnico.");
+    }
+    
+    return response.json();
+  },
+
+  async updateResponsavelTecnico(id: number, responsavel: UpdateResponsavelTecnicoDto): Promise<ResponsavelTecnico> {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}/${id}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+      body: JSON.stringify(responsavel),
+    });
+    
+    if (!response.ok) {
+      let errorMessage = `Erro HTTP ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+    
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return await this.getResponsavelTecnicoById(id);
+    }
+    
+    const responseText = await response.text();
+    if (!responseText.trim()) {
+      return await this.getResponsavelTecnicoById(id);
+    }
+    
+    try {
+      return JSON.parse(responseText);
+    } catch {
+      return await this.getResponsavelTecnicoById(id);
+    }
+  },
+
+  async deleteResponsavelTecnico(id: number): Promise<void> {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        ...authHeaders(),
+      },
+    });
+    
+    if (!response.ok) {
+      let errorMessage = `Erro HTTP ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+  },
+
+  async assignObrasToResponsavelTecnico(id: number, data: CreateVinculosObrasDto): Promise<void> {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}/${id}/obras`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+      body: JSON.stringify(data.vinculos),
+    });
+    
+    if (!response.ok) {
+      let errorMessage = `Erro HTTP ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+  },
+
+  async getObrasDoResponsavelTecnico(id: number): Promise<Obra[]> {
+    const url = `${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}/${id}/obras`;
+    const headers = authHeaders();
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: "include",
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    });
+    
+    if (response.status === 204 || response.status === 404) {
+      return [];
+    }
+    
+    if (!response.ok) {
+      throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const responseText = await response.text();
+    
+    if (!responseText || responseText.trim() === '') {
+      return [];
+    }
+    
+    try {
+      const data = JSON.parse(responseText);
+      
+      if (!Array.isArray(data)) {
+        return [];
+      }
+      
+      const obras: Obra[] = data.map((vinculo: unknown) => {
+        const vincData = vinculo as { obra?: { id: number; nome: string; status: string; data_inicio: string; data_conclusao: string; orcamento_total: number; percentual_concluido: number }; data_inicio?: string; data_fim?: string; tipo_vinculo?: string };
+        if (vincData.obra) {
+          return {
+            id: vincData.obra.id,
+            nome: vincData.obra.nome,
+            status: vincData.obra.status,
+            data_inicio: vincData.obra.data_inicio,
+            data_conclusao: vincData.obra.data_conclusao,
+            orcamento_total: vincData.obra.orcamento_total,
+            percentual_concluido: vincData.obra.percentual_concluido,
+            vinculo: {
+              data_inicio: vincData.data_inicio,
+              data_fim: vincData.data_fim,
+              tipo_vinculo: vincData.tipo_vinculo
+            }
+          } as Obra;
+        }
+        return null;
+      }).filter((obra): obra is Obra => obra !== null);
+      
+      return obras;
+      
+    } catch {
+      return [];
+    }
+  },
+
+  async getResponsavelTecnicoDetalhes(id: number): Promise<ResponsavelTecnico & { obras?: Obra[] }> {
+    const url = `${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}/${id}/detalhes`;
+    
+    const response = await fetch(url, {
+      credentials: "include", 
+      headers: {
+        ...authHeaders(),
+      },
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        return await this.getResponsavelTecnicoById(id);
+      }
+      
+      let errorMessage = `Erro HTTP ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+    
+    return response.json();
+  },
+};
