@@ -7,6 +7,8 @@ export interface Equipamento {
   numeroDeSerie: string;
   estado: string;
   fornecedorId: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Obra {
@@ -43,4 +45,19 @@ export interface UpdateEquipamentoDto {
 
 export interface UpdateEquipamentoObrasDto {
   obraIds: number[];
+}
+
+export interface EquipamentoDetalhes extends Equipamento {
+  fornecedor?: {
+    id: number;
+    nome: string;
+    cnpj: string;
+    telefone: string;
+    email: string;
+    endereco: string;
+    ativo: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+  obras?: Obra[];
 }

@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { equipamentosService } from "@/services/equipamentosService";
 import { obrasService } from "@/services/obrasService";
 import { Equipamento, Obra } from "@/types/equipamentos";
+import { Building2 } from "lucide-react";
 
 interface AssignObrasButtonProps {
   equipamento: Equipamento;
@@ -121,7 +121,10 @@ export default function AssignObrasButton({ equipamento, onSuccess }: AssignObra
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Obras</Button>
+        <Button variant="outline" size="sm" className="flex items-center gap-2 h-8">
+          <Building2 className="h-4 w-4" />
+          Obras
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-white shadow-2xl border-0 p-0" style={{ borderRadius: '0.75rem' }}>
         <DialogHeader className="text-white p-4" style={{ background: '#F1860C', borderRadius: '0.75rem 0.75rem 0 0' }}>

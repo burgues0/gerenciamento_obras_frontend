@@ -9,12 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { equipamentosService } from "@/services/equipamentosService";
 import { obrasService } from "@/services/obrasService";
 import { CreateEquipamentoDto, Obra } from "@/types/equipamentos";
-import { API_CONFIG } from "@/lib/config";
-
-function authHeaders(): HeadersInit {
-  const token = localStorage.getItem("auth-token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 interface CreateEquipamentoButtonProps {
   onSuccess: () => void;
@@ -309,7 +303,7 @@ const CreateEquipamentoButton = ({ onSuccess }: CreateEquipamentoButtonProps) =>
                 ))
               ) : filtroObras.trim() ? (
                 <p className="text-gray-500 text-sm p-2">
-                  Nenhuma obra encontrada para "{filtroObras}"
+                  Nenhuma obra encontrada para &quot;{filtroObras}&quot;
                 </p>
               ) : (
                 <p className="text-gray-500 text-sm p-2">

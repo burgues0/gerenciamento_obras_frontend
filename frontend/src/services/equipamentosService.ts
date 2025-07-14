@@ -1,5 +1,6 @@
 import { API_CONFIG } from "@/lib/config";
-import { Equipamento, CreateEquipamentoDto, UpdateEquipamentoDto, UpdateEquipamentoObrasDto, Obra } from "@/types/equipamentos";
+import { Equipamento, CreateEquipamentoDto, UpdateEquipamentoDto, UpdateEquipamentoObrasDto, Obra, EquipamentoDetalhes } from "@/types/equipamentos";
+import { fornecedoresService } from "./fornecedoresService";
 
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem("auth-token");
@@ -77,7 +78,7 @@ export const equipamentosService = {
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
-      } catch (e) {
+      } catch {
         // Ignore parse error
       }
       throw new Error(errorMessage);
@@ -96,7 +97,7 @@ export const equipamentosService = {
     try {
       const equipamentoAtualizado = JSON.parse(responseText);
       return equipamentoAtualizado;
-    } catch (e) {
+    } catch {
       return await this.getEquipamentoById(id);
     }
   },
@@ -160,7 +161,6 @@ export const equipamentosService = {
     return resultado;
   },
 
-  // Método para tentar associar obras usando POST individual para cada obra
   async associarObrasIndividualmente(id: number, obraIds: number[]): Promise<void> {
     
     for (const obraId of obraIds) {
@@ -178,7 +178,8 @@ export const equipamentosService = {
         if (!response.ok) {
         } else {
         }
-      } catch (error) {
+      } catch {
+        // Ignore error
       }
     }
   },
@@ -245,12 +246,12 @@ export const equipamentosService = {
             const equipamentosNaObra = await equipamentosResponse.json();
             
             // Verificar se o equipamento está na lista
-            const equipamentoEncontrado = equipamentosNaObra.find((eq: any) => eq.id === equipamentoId);
+            const equipamentoEncontrado = equipamentosNaObra.find((eq: { id: number }) => eq.id === equipamentoId);
             if (equipamentoEncontrado) {
               obrasComEquipamento.push(obra);
             }
           }
-        } catch (error) {
+        } catch {
           // Se der erro ao buscar equipamentos da obra, continua para a próxima
           continue;
         }
@@ -266,7 +267,6 @@ export const equipamentosService = {
     }
   },
 
-  // Método alternativo para criar equipamento sem obras
   async createEquipamentoSemObras(equipamento: Omit<CreateEquipamentoDto, 'obrasId'>): Promise<Equipamento> {
     
     const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.EQUIPAMENTOS}`, {
@@ -286,5 +286,39 @@ export const equipamentosService = {
     
     const equipamentoCriado = await response.json();
     return equipamentoCriado;
+  },
+
+  async getEquipamentoDetalhes(id: number): Promise<EquipamentoDetalhes> {
+    try {
+      // Buscar dados básicos do equipamento
+      const equipamento = await this.getEquipamentoById(id);
+      
+      // Buscar detalhes do fornecedor
+      let fornecedor = null;
+      if (equipamento.fornecedorId) {
+        try {
+          fornecedor = await fornecedoresService.getFornecedorById(equipamento.fornecedorId);
+        } catch (error) {
+          console.error("Erro ao carregar fornecedor:", error);
+        }
+      }
+      
+      // Buscar obras associadas
+      let obras: Obra[] = [];
+      try {
+        obras = await this.getObrasByEquipamentoId(id);
+      } catch (error) {
+        console.error("Erro ao carregar obras:", error);
+      }
+      
+      return {
+        ...equipamento,
+        fornecedor: fornecedor || undefined,
+        obras
+      };
+    } catch (error) {
+      console.error("Erro ao carregar detalhes do equipamento:", error);
+      throw error;
+    }
   },
 };

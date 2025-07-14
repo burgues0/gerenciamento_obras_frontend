@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { equipamentosService } from "@/services/equipamentosService";
 import { Equipamento, UpdateEquipamentoDto } from "@/types/equipamentos";
 import { API_CONFIG } from "@/lib/config";
+import { Edit } from "lucide-react";
 
 interface EditEquipamentoButtonProps {
   equipamento: Equipamento;
@@ -69,9 +70,10 @@ export default function EditEquipamentoButton({ equipamento, onSuccess }: EditEq
       
       try {
         await equipamentosService.updateEquipamento(idFinal, dadosLimpos);
-      } catch (updateError: any) {
-        if (updateError.message.includes("WHERE parameter \"id\" has invalid \"undefined\" value") ||
-            updateError.message.includes("obras do equipamento")) {
+      } catch (updateError: unknown) {
+        const error = updateError as Error;
+        if (error.message.includes("WHERE parameter \"id\" has invalid \"undefined\" value") ||
+            error.message.includes("obras do equipamento")) {
           
           let alternativeSuccess = false;
           
@@ -90,7 +92,7 @@ export default function EditEquipamentoButton({ equipamento, onSuccess }: EditEq
             }
 
             alternativeSuccess = true;
-          } catch (putError) {
+          } catch {
             try {
               const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}/api/equipamentos/${idFinal}`, {
                 method: "PATCH",
@@ -106,7 +108,7 @@ export default function EditEquipamentoButton({ equipamento, onSuccess }: EditEq
               }
 
               alternativeSuccess = true;
-            } catch (patchError) {
+            } catch {
               throw updateError;
             }
           }
@@ -130,8 +132,9 @@ export default function EditEquipamentoButton({ equipamento, onSuccess }: EditEq
         fornecedorId: 0,
       });
       onSuccess();
-    } catch (error: any) {
-      setError(error.message || "Erro ao atualizar equipamento");
+    } catch (error: unknown) {
+      const err = error as Error;
+      setError(err.message || "Erro ao atualizar equipamento");
     } finally {
       setIsLoading(false);
     }
@@ -155,8 +158,8 @@ export default function EditEquipamentoButton({ equipamento, onSuccess }: EditEq
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Editar
+        <Button variant="outline" size="sm" className="p-2 h-8 w-8">
+          <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-white shadow-2xl border-0 p-0" style={{ borderRadius: '0.75rem' }}>
