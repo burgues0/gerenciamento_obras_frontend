@@ -3,39 +3,48 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AppLayout from '@/components/layout-components/applayout';
-import { fornecedoresService } from "@/services/fornecedoresService";
-import { Fornecedor } from "@/types/fornecedores";
-import FornecedoresDataTable from "@/components/fornecedores/fornecedoresDataTable";
-import CreateFornecedorButton from "@/components/fornecedores/createFornecedorButton";
-import { Truck } from "lucide-react";
+import { responsaveisTecnicosService } from "@/services/responsaveisTecnicosService";
+import { ResponsavelTecnico } from "@/types/responsaveis-tecnicos";
+import ResponsaveisTecnicosDataTable from "@/components/responsaveis-tecnicos/responsaveisTecnicosDataTable";
+import CreateResponsavelTecnicoButton from "@/components/responsaveis-tecnicos/createResponsavelTecnicoButton";
+import { UserCheck } from "lucide-react";
 
-export default function FornecedoresPage() {
-  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
+export default function ResponsaveisTecnicosPage() {
+  const [responsaveis, setResponsaveis] = useState<ResponsavelTecnico[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadFornecedores = async () => {
+  const loadResponsaveis = async () => {
     try {
       setLoading(true);
-      const data = await fornecedoresService.getAllFornecedores();
+      const data = await responsaveisTecnicosService.getAllResponsaveisTecnicos();
       
       const sortedData = data.sort((a, b) => a.id - b.id);
-      setFornecedores(sortedData);
+      setResponsaveis(sortedData);
       setError(null);
     } catch (err: unknown) {
-      const error = err as Error;
-      setError(error.message || "Erro ao carregar fornecedores");
+      const error = err as { status?: number; message?: string };
+      console.error('Erro ao carregar responsáveis técnicos:', error);
+      
+      // Tratamento específico para erro de autenticação
+      if (error?.status === 401 || error?.message?.includes('Unauthorized') || error?.message?.includes('Token ausente')) {
+        setError('Acesso não autorizado. Faça login para acessar os responsáveis técnicos.');
+      } else if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
+        setError('Erro de conexão. Verifique se o servidor está rodando.');
+      } else {
+        setError(error?.message || 'Erro ao carregar responsáveis técnicos. Tente novamente.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadFornecedores();
+    loadResponsaveis();
   }, []);
 
   const handleSuccess = () => {
-    loadFornecedores();
+    loadResponsaveis();
   };
 
   return (
@@ -44,25 +53,27 @@ export default function FornecedoresPage() {
         {/* Header da Página */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Fornecedores</h1>
-            <p className="text-gray-600">Gerencie os fornecedores cadastrados no sistema</p>
+            <h1 className="text-3xl font-bold">Responsáveis Técnicos</h1>
+            <p className="text-gray-600">Gerencie os responsáveis técnicos cadastrados no sistema</p>
           </div>
-          <CreateFornecedorButton onSuccess={handleSuccess} />
+          <div className="flex gap-3">
+            <CreateResponsavelTecnicoButton onSuccess={handleSuccess} />
+          </div>
         </div>
 
         {/* Card Principal */}
         <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
           <CardHeader style={{ background: '#2C607A' }} className="text-white rounded-t-lg py-3">
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <Truck className="h-5 w-5" />
-              Lista de Fornecedores
+              <UserCheck className="w-6 h-6" />
+              Lista de Responsáveis Técnicos
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             {loading && (
               <div className="flex flex-col items-center justify-center py-16">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
-                <p className="text-gray-600 text-lg">Carregando fornecedores...</p>
+                <p className="text-gray-600 text-lg">Carregando responsáveis técnicos...</p>
               </div>
             )}
             
@@ -75,7 +86,7 @@ export default function FornecedoresPage() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <p className="text-red-800 font-medium">Erro ao carregar fornecedores</p>
+                    <p className="text-red-800 font-medium">Erro ao carregar responsáveis técnicos</p>
                     <p className="text-red-600 text-sm mt-1">{error}</p>
                   </div>
                 </div>
@@ -83,8 +94,8 @@ export default function FornecedoresPage() {
             )}
             
             {!loading && !error && (
-              <FornecedoresDataTable 
-                fornecedores={fornecedores} 
+              <ResponsaveisTecnicosDataTable 
+                responsaveis={responsaveis} 
                 onSuccess={handleSuccess} 
               />
             )}
