@@ -34,8 +34,7 @@ const ObraDiariosSectionDashboard: React.FC<ObraDiariosSectionDashboardProps> = 
   };
 
   return (
-    <section className="mb-4">
-      <h2 className="font-bold mb-2">Diários de Obra</h2>
+    <div>
       {mode === 'list' && (
         <ObraDiariosList
           key={refreshKey}
@@ -64,7 +63,7 @@ const ObraDiariosSectionDashboard: React.FC<ObraDiariosSectionDashboardProps> = 
       {mode === 'delete' && diarioId && (
         <ObraDiarioDelete obraId={obraId} diarioId={diarioId} onDeleted={handleBack} onCancel={handleBack} />
       )}
-    </section>
+    </div>
   );
 };
 

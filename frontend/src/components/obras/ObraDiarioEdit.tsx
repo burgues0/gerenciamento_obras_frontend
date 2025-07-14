@@ -13,7 +13,6 @@ const ObraDiarioEdit: React.FC<ObraDiarioEditProps> = ({ obraId, diarioId, onUpd
   const [data, setData] = useState('');
   const [clima, setClima] = useState('');
   const [atividadesExecutadas, setAtividadesExecutadas] = useState('');
-  const [materiaisUtilizados, setMateriaisUtilizados] = useState('');
   const [observacoes, setObservacoes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +24,6 @@ const ObraDiarioEdit: React.FC<ObraDiarioEditProps> = ({ obraId, diarioId, onUpd
         setData(d.data ? d.data.substring(0,10) : '');
         setClima(d.clima || '');
         setAtividadesExecutadas(d.atividadesExecutadas || '');
-        setMateriaisUtilizados(d.materiaisUtilizados ? d.materiaisUtilizados.map((m: any) => m.nome).join(', ') : '');
         setObservacoes(d.observacoes || '');
       })
       .catch((err) => setError(err.message))
@@ -41,9 +39,6 @@ const ObraDiarioEdit: React.FC<ObraDiarioEditProps> = ({ obraId, diarioId, onUpd
         data,
         clima: clima || undefined,
         atividadesExecutadas: atividadesExecutadas || undefined,
-        materiaisUtilizados: materiaisUtilizados
-          ? materiaisUtilizados.split(',').map((m: string) => m.trim()).filter(Boolean)
-          : undefined,
         observacoes: observacoes || undefined,
         obraId: typeof obraId === 'string' ? parseInt(obraId, 10) : obraId,
       });
@@ -72,10 +67,6 @@ const ObraDiarioEdit: React.FC<ObraDiarioEditProps> = ({ obraId, diarioId, onUpd
       <div className="mb-3">
         <label className="block text-sm font-medium mb-1">Atividades Executadas</label>
         <textarea className="border rounded p-2 w-full bg-white" value={atividadesExecutadas} onChange={e => setAtividadesExecutadas(e.target.value)} />
-      </div>
-      <div className="mb-3">
-        <label className="block text-sm font-medium mb-1">Materiais Utilizados (separe por vírgula)</label>
-        <input type="text" className="border rounded p-2 w-full bg-white" value={materiaisUtilizados} onChange={e => setMateriaisUtilizados(e.target.value)} placeholder="Ex: Cimento, Areia, Blocos" />
       </div>
       <div className="mb-3">
         <label className="block text-sm font-medium mb-1">Observações</label>

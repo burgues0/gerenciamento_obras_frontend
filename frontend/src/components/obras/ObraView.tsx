@@ -320,33 +320,19 @@ export default function ObraView() {
               <p className="text-gray-500">Não há fiscalizações atribuídas a esta obra.</p>
             )}
           </CardContent>
-        </Card>
+        </Card>          {/* Seção de Etapas da Obra */}
+          <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+            <CardContent className="p-6">
+              {obraId && <ObraEtapasSectionDashboard obraId={obraId} />}
+            </CardContent>
+          </Card>
 
-        {/* Seção de Etapas da Obra */}
-        <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
-          <CardHeader style={{ background: '#2C607A' }} className="text-white rounded-t-lg py-3">
-            <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <Calendar className="w-6 h-6" />
-              Etapas da Obra
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {obraId && <ObraEtapasSectionDashboard obraId={obraId} />}
-          </CardContent>
-        </Card>
-
-        {/* Seção de Diários de Obra */}
-        <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
-          <CardHeader style={{ background: '#2C607A' }} className="text-white rounded-t-lg py-3">
-            <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <BookOpen className="w-6 h-6" />
-              Diários de Obra
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {obraId && <ObraDiariosSectionDashboard obraId={obraId} />}
-          </CardContent>
-        </Card>
+          {/* Seção de Diários de Obra */}
+          <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+            <CardContent className="p-6">
+              {obraId && <ObraDiariosSectionDashboard obraId={obraId} />}
+            </CardContent>
+          </Card>
       </div>
     </div>
   );
