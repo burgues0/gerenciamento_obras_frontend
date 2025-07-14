@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Obra } from "@/types/obras";
-import { obrasService } from "@/services/obrasService";
+import { ObrasService } from "@/lib/api";
 import ObrasDataTable from "@/components/obras/obrasDataTable";
 
 export default function ObrasPage() {
@@ -17,7 +17,7 @@ export default function ObrasPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await obrasService.getAllObras();
+      const data = await ObrasService.getAll();
       setObras(data);
     } catch (err: any) {
       setError(err.message || "Erro ao carregar obras.");

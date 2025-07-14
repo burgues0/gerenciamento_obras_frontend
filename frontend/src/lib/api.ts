@@ -131,7 +131,10 @@ export class ApiClient {
       throw new Error(errorData.message || 'Erro na requisição');
     }
 
-    return response.json();
+    // Se for 204 No Content ou body vazio, não tente fazer response.json()
+    if (response.status === 204) return null;
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
   }
 
   static async delete(endpoint: string, includeAuth = true, isAuthEndpoint = false, token?: string) {
@@ -150,7 +153,10 @@ export class ApiClient {
       throw new Error(errorData.message || 'Erro na requisição');
     }
 
-    return response.json();
+    // Se for 204 No Content ou body vazio, não tente fazer response.json()
+    if (response.status === 204) return null;
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
   }
 }
 
@@ -166,9 +172,46 @@ export const AuthService = {
 };
 
 export const ObrasService = {
-  getAll: (token?: string) => ApiClient.get(API_CONFIG.ENDPOINTS.OBRAS, true, false, token),
+  getAll: (token?: string, filters?: Record<string, any>) => {
+    let endpoint = API_CONFIG.ENDPOINTS.OBRAS;
+    if (filters) {
+      const params = new URLSearchParams(filters as any).toString();
+      endpoint += `?${params}`;
+    }
+    return ApiClient.get(endpoint, true, false, token);
+  },
   getById: (id: string, token?: string) => ApiClient.get(`${API_CONFIG.ENDPOINTS.OBRAS}/${id}`, true, false, token),
   create: (data: any, token?: string) => ApiClient.post(API_CONFIG.ENDPOINTS.OBRAS, data, true, false, token),
   update: (id: string, data: any, token?: string) => ApiClient.put(`${API_CONFIG.ENDPOINTS.OBRAS}/${id}`, data, true, false, token),
   delete: (id: string, token?: string) => ApiClient.delete(`${API_CONFIG.ENDPOINTS.OBRAS}/${id}`, true, false, token),
+
+  getEnderecos: (token?: string) => ApiClient.get(`/enderecos`, true, false, token),
+  getEnderecoByObra: (id: string, token?: string) => ApiClient.get(`/obras/${id}/endereco`, true, false, token),
+  createEndereco: (id: string, data: any, token?: string) => ApiClient.post(`/obras/${id}/endereco`, data, true, false, token),
+  updateEndereco: (id: string, data: any, token?: string) => ApiClient.put(`/obras/${id}/endereco`, data, true, false, token),
+  getFornecedores: (id: string, token?: string) => ApiClient.get(`/obras/${id}/fornecedores`, true, false, token),
+  getEquipamentos: (id: string, token?: string) => ApiClient.get(`/obras/${id}/equipamentos`, true, false, token),
+  getFiscalizacoes: (id: string, token?: string) => ApiClient.get(`/fiscalizacoes/obras/${id}/fiscalizacoes`, true, false, token),
+  deleteFiscalizacoes: (id: string, token?: string) => ApiClient.delete(`/fiscalizacoes/obras/${id}/fiscalizacoes`, true, false, token),
+  createFiscalizacao: (data: any, token?: string) => ApiClient.post(`/fiscalizacoes/obras/fiscalizacao`, data, true, false, token),
+
+  getEtapas: (obraId: string | number, token?: string) => ApiClient.get(`/obras/${obraId}/etapas`, true, false, token),
+  getEtapaById: (obraId: string | number, etapaId: string | number, token?: string) => ApiClient.get(`/obras/${obraId}/etapas/${etapaId}`, true, false, token),
+  createEtapa: (obraId: string | number, data: any, token?: string) => ApiClient.post(`/obras/${obraId}/etapas`, data, true, false, token),
+  updateEtapa: (obraId: string | number, etapaId: string | number, data: any, token?: string) => ApiClient.put(`/obras/${obraId}/etapas/${etapaId}`, data, true, false, token),
+  deleteEtapa: (obraId: string | number, etapaId: string | number, token?: string) => ApiClient.delete(`/obras/${obraId}/etapas/${etapaId}`, true, false, token),
+
+  getDiarios: (obraId: string | number, token?: string) => ApiClient.get(`/obras/${obraId}/diarios`, true, false, token),
+  getDiarioById: (obraId: string | number, diarioId: string | number, token?: string) => ApiClient.get(`/obras/${obraId}/diarios/${diarioId}`, true, false, token),
+  createDiario: (obraId: string | number, data: any, token?: string) => ApiClient.post(`/obras/${obraId}/diarios`, data, true, false, token),
+  updateDiario: (obraId: string | number, diarioId: string | number, data: any, token?: string) => ApiClient.put(`/obras/${obraId}/diarios/${diarioId}`, data, true, false, token),
+  deleteDiario: (obraId: string | number, diarioId: string | number, token?: string) => ApiClient.delete(`/obras/${obraId}/diarios/${diarioId}`, true, false, token),
+};
+
+export const MateriaisService = {
+  getAll: (token?: string) => ApiClient.get(API_CONFIG.ENDPOINTS.MATERIAIS, true, false, token),
+  getById: (id: string, token?: string) => ApiClient.get(`${API_CONFIG.ENDPOINTS.MATERIAIS}/${id}`, true, false, token),
+  create: (data: any, token?: string) => ApiClient.post(API_CONFIG.ENDPOINTS.MATERIAIS, data, true, false, token),
+  update: (id: string, data: any, token?: string) => ApiClient.put(`${API_CONFIG.ENDPOINTS.MATERIAIS}/${id}`, data, true, false, token),
+  delete: (id: string, token?: string) => ApiClient.delete(`${API_CONFIG.ENDPOINTS.MATERIAIS}/${id}`, true, false, token),
 };
