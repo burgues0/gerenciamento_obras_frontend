@@ -13,8 +13,6 @@ export const API_CONFIG = {
     FORNECEDORES: '/fornecedores',
     RESPONSAVEIS_TECNICOS: '/responsaveis-tecnicos',
     FISCALIZACOES: '/fiscalizacoes',
-    DIARIO_OBRA: '/diario-obra',
-    ETAPAS_OBRA: '/etapas-obra',
     RELATORIOS: '/relatorios'
   }
 };

@@ -18,6 +18,7 @@ import { ObrasFiscalizacoes } from 'src/domain/obra-fiscalizacoes/entities/obras
 import { Relatorios } from 'src/domain/relatorios/entities/relatorios.entity';
 import { Material } from 'src/domain/materiais/entities/material.entity';
 import { DiarioMaterial } from 'src/domain/diario-materiais/diario-material.entity';
+import { DocumentValidatorService } from 'src/domain/shared/document-validator.service';
 
 @Module({
   imports: [
@@ -38,9 +39,9 @@ import { DiarioMaterial } from 'src/domain/diario-materiais/diario-material.enti
       ObrasFornecedores,
       ObraResponsavelTecnico,
       ObrasFiscalizacoes,
-      DiarioMaterial
+      DiarioMaterial,
     ]),
   ],
-  providers: [SeedService],
+  providers: [SeedService, DocumentValidatorService],
 })
 export class SeedModule {}

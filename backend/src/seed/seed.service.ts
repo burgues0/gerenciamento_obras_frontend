@@ -41,6 +41,7 @@ import {
   templatesDeMaterial,
 } from './seed.constants';
 import { DiarioMaterial } from 'src/domain/diario-materiais/diario-material.entity';
+import { DocumentValidatorService } from 'src/domain/shared/document-validator.service';
 
 @Injectable()
 export class SeedService implements OnModuleInit {
@@ -50,21 +51,29 @@ export class SeedService implements OnModuleInit {
     @InjectModel(Endereco) private enderecoModel: typeof Endereco,
     @InjectModel(Equipamentos) private equipamentosModel: typeof Equipamentos,
     @InjectModel(EtapasDaObra) private etapasModel: typeof EtapasDaObra,
-    @InjectModel(Fiscalizacoes) private fiscalizacoesModel: typeof Fiscalizacoes,
+    @InjectModel(Fiscalizacoes)
+    private fiscalizacoesModel: typeof Fiscalizacoes,
     @InjectModel(Fornecedores) private fornecedoresModel: typeof Fornecedores,
     @InjectModel(Material) private materialModel: typeof Material,
     @InjectModel(Obras) private obrasModel: typeof Obras,
-    @InjectModel(ObraResponsavelTecnico) private obraResponsavelTecnicoModel: typeof ObraResponsavelTecnico,
-    @InjectModel(ObrasEquipamentos) private obrasEquipamentosModel: typeof ObrasEquipamentos,
-    @InjectModel(ObrasFiscalizacoes) private obrasFiscalizacoesModel: typeof ObrasFiscalizacoes,
-    @InjectModel(ObrasFornecedores) private obrasFornecedoresModel: typeof ObrasFornecedores,
+    @InjectModel(ObraResponsavelTecnico)
+    private obraResponsavelTecnicoModel: typeof ObraResponsavelTecnico,
+    @InjectModel(ObrasEquipamentos)
+    private obrasEquipamentosModel: typeof ObrasEquipamentos,
+    @InjectModel(ObrasFiscalizacoes)
+    private obrasFiscalizacoesModel: typeof ObrasFiscalizacoes,
+    @InjectModel(ObrasFornecedores)
+    private obrasFornecedoresModel: typeof ObrasFornecedores,
     @InjectModel(Relatorios) private relatoriosModel: typeof Relatorios,
-    @InjectModel(ResponsavelTecnico) private responsavelTecnicoModel: typeof ResponsavelTecnico,
-    @InjectModel(DiarioMaterial) private diarioMateriaisModel: typeof DiarioMaterial,
+    @InjectModel(ResponsavelTecnico)
+    private responsavelTecnicoModel: typeof ResponsavelTecnico,
+    @InjectModel(DiarioMaterial)
+    private diarioMateriaisModel: typeof DiarioMaterial,
 
     // Services
     private configService: ConfigService,
     private sequelize: Sequelize,
+    private documentValidatorService: DocumentValidatorService,
   ) {}
 
   async onModuleInit() {
@@ -78,21 +87,96 @@ export class SeedService implements OnModuleInit {
 
   async clearAll() {
     // A ordem de destruição é importante para respeitar as chaves estrangeiras
-    await this.diarioMateriaisModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.obrasFiscalizacoesModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.obraResponsavelTecnicoModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.obrasEquipamentosModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.obrasFornecedoresModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.diariosModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.etapasModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.relatoriosModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.fiscalizacoesModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.responsavelTecnicoModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.materialModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.obrasModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.equipamentosModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.fornecedoresModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
-    await this.enderecoModel.destroy({ where: {}, truncate: true, cascade: true, force: true });
+    await this.diarioMateriaisModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.obrasFiscalizacoesModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.obraResponsavelTecnicoModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.obrasEquipamentosModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.obrasFornecedoresModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.diariosModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.etapasModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.relatoriosModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.fiscalizacoesModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.responsavelTecnicoModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.materialModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.obrasModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.equipamentosModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.fornecedoresModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
+    await this.enderecoModel.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      force: true,
+    });
   }
 
   async resetSequences() {
@@ -115,7 +199,9 @@ export class SeedService implements OnModuleInit {
         await this.sequelize.query(`ALTER SEQUENCE "${seq}" RESTART WITH 1`);
         console.log(`Sequence ${seq} reiniciada.`);
       } catch {
-        console.warn(`Sequence ${seq} não existe ou não pode ser reiniciada, ignorando.`);
+        console.warn(
+          `Sequence ${seq} não existe ou não pode ser reiniciada, ignorando.`,
+        );
       }
     }
   }
@@ -137,14 +223,16 @@ export class SeedService implements OnModuleInit {
       console.log('Banco de dados de produção vazio. Gerando seed inicial...');
       await this.seedData();
     } catch (error) {
-        // Se a tabela não existe, o count() vai falhar. Isso é esperado na primeira execução.
-        if (error.name === 'SequelizeDatabaseError') {
-            console.log('Tabelas não encontradas. Gerando seed inicial para produção...');
-            await this.seedData();
-        } else {
-            // Lança outros erros inesperados
-            throw error;
-        }
+      // Se a tabela não existe, o count() vai falhar. Isso é esperado na primeira execução.
+      if (error.name === 'SequelizeDatabaseError') {
+        console.log(
+          'Tabelas não encontradas. Gerando seed inicial para produção...',
+        );
+        await this.seedData();
+      } else {
+        // Lança outros erros inesperados
+        throw error;
+      }
     }
   }
 
@@ -164,7 +252,11 @@ export class SeedService implements OnModuleInit {
         nome: template.nome,
         unidadeMedida: template.unidade,
         descricao: template.descricao,
-        precoUnitario: faker.number.float({ min: 10, max: 800, precision: 0.01 }),
+        precoUnitario: faker.number.float({
+          min: 10,
+          max: 800,
+          precision: 0.01,
+        }),
         fabricante: faker.helpers.arrayElement(template.fabricantes),
         modelo: faker.string.alphanumeric(10),
       } as any);
@@ -173,11 +265,18 @@ export class SeedService implements OnModuleInit {
 
     // ResponsavelTecnico
     for (let i = 0; i < 15; i++) {
+      const cpfNumerico = faker.string.numeric(11);
+      const cpfFormatado = this.documentValidatorService.formatarCpf(cpfNumerico);
+      
       const responsavel = await this.responsavelTecnicoModel.create({
         nome: faker.person.fullName(),
-        cpf: faker.string.numeric(11),
+        cpf: cpfFormatado,
         registro_profissional: `CREA-${faker.string.numeric(6)}`,
-        especialidade: faker.helpers.arrayElement(['Engenharia Civil', 'Arquitetura', 'Engenharia Elétrica']),
+        especialidade: faker.helpers.arrayElement([
+          'Engenharia Civil',
+          'Arquitetura',
+          'Engenharia Elétrica',
+        ]),
         ativo: true,
       });
       responsaveisTecnicos.push(responsavel);
@@ -205,7 +304,15 @@ export class SeedService implements OnModuleInit {
       }
 
       const dominio = faker.helpers.arrayElement(dominiosEmail);
-      const emailFornecedor = nomeFornecedor.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, '.') + i + dominio;
+      const emailFornecedor =
+        nomeFornecedor
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9 ]/g, '')
+          .replace(/\s+/g, '.') +
+        i +
+        dominio;
 
       const fornecedor = await this.fornecedoresModel.create({
         nome: nomeFornecedor,
@@ -217,7 +324,7 @@ export class SeedService implements OnModuleInit {
       fornecedores.push(fornecedor);
     }
 
-     // Equipamentos
+    // Equipamentos
     for (let i = 0; i < 12; i++) {
       const fornecedor = faker.helpers.arrayElement(fornecedores);
       const equipamentoInfo = faker.helpers.arrayElement(equipamentosInfo);
@@ -247,18 +354,36 @@ export class SeedService implements OnModuleInit {
       } as any);
 
       const dataInicio = faker.date.past({ years: 1 });
-      const dataConclusao = faker.date.future({ years: 1, refDate: dataInicio });
+      const dataConclusao = faker.date.future({
+        years: 1,
+        refDate: dataInicio,
+      });
       const orcamentoTotal = faker.number.int({ min: 500_000, max: 3_000_000 });
-      const gastosAtualizados = parseFloat((orcamentoTotal * faker.number.float({ min: 0.4, max: 1, precision: 0.01 })).toFixed(2));
-      const percentualConcluido = parseFloat(faker.number.float({ min: 0, max: 100, precision: 0.01 }).toFixed(2));
+      const gastosAtualizados = parseFloat(
+        (
+          orcamentoTotal *
+          faker.number.float({ min: 0.4, max: 1, precision: 0.01 })
+        ).toFixed(2),
+      );
+      const percentualConcluido = parseFloat(
+        faker.number.float({ min: 0, max: 100, precision: 0.01 }).toFixed(2),
+      );
       const nomeDaObra = `Construção do Edifício ${faker.word.words(2)}`;
-      const templatesDescricao = gerarTemplatesDescricaoObra(nomeDaObra, endereco.cidade);
+      const templatesDescricao = gerarTemplatesDescricaoObra(
+        nomeDaObra,
+        endereco.cidade,
+      );
       const descricaoDaObra = faker.helpers.arrayElement(templatesDescricao);
 
       const obra = await this.obrasModel.create({
         nome: nomeDaObra,
         descricao: descricaoDaObra,
-        status: faker.helpers.arrayElement(['Planejada', 'Em andamento', 'Concluída', 'Paralisada']),
+        status: faker.helpers.arrayElement([
+          'Planejada',
+          'Em andamento',
+          'Concluída',
+          'Paralisada',
+        ]),
         data_inicio: dataInicio,
         data_conclusao: dataConclusao,
         orcamento_total: orcamentoTotal,
@@ -277,13 +402,17 @@ export class SeedService implements OnModuleInit {
     for (let i = 0; i < numeroDeFiscalizacoesACriar; i++) {
       const info = faker.helpers.arrayElement(opcoesDeFiscalizacao);
       const responsavel = faker.helpers.arrayElement(responsaveisTecnicos);
-      
+
       const fiscalizacao = await this.fiscalizacoesModel.create({
         titulo: info.titulo,
         descricao: info.descricao,
         data_inicio: faker.date.past({ years: 1 }),
         data_fim: faker.date.recent(),
-        status: faker.helpers.arrayElement(['Planejada', 'Em Andamento', 'Concluída']),
+        status: faker.helpers.arrayElement([
+          'Planejada',
+          'Em Andamento',
+          'Concluída',
+        ]),
         responsavelTecnicoId: responsavel.id,
       } as any);
       fiscalizacoes.push(fiscalizacao);
@@ -299,33 +428,54 @@ export class SeedService implements OnModuleInit {
     // Associações
     for (const obra of obras) {
       // ObrasFornecedores
-      const selectedFornecedores = faker.helpers.arrayElements(fornecedores, { min: 2, max: 4 });
+      const selectedFornecedores = faker.helpers.arrayElements(fornecedores, {
+        min: 2,
+        max: 4,
+      });
       for (const fornecedor of selectedFornecedores) {
-        await this.obrasFornecedoresModel.create({ obraId: obra.id, fornecedorId: fornecedor.id } as any);
+        await this.obrasFornecedoresModel.create({
+          obraId: obra.id,
+          fornecedorId: fornecedor.id,
+        } as any);
       }
 
       // ObrasEquipamentos
-      const selectedEquipamentos = faker.helpers.arrayElements(equipamentos, { min: 3, max: 5 });
+      const selectedEquipamentos = faker.helpers.arrayElements(equipamentos, {
+        min: 3,
+        max: 5,
+      });
       for (const equipamento of selectedEquipamentos) {
-        await this.obrasEquipamentosModel.create({ obraId: obra.id, equipamentoId: equipamento.id });
+        await this.obrasEquipamentosModel.create({
+          obraId: obra.id,
+          equipamentoId: equipamento.id,
+        });
       }
 
       // ObraResponsavelTecnico
       if (responsaveisTecnicos.length > 0) {
-        const selectedResponsaveis = faker.helpers.arrayElements(responsaveisTecnicos, { min: 1, max: 2 });
+        const selectedResponsaveis = faker.helpers.arrayElements(
+          responsaveisTecnicos,
+          { min: 1, max: 2 },
+        );
         for (const responsavel of selectedResponsaveis) {
           const dataInicioVinculo = faker.date.between({
             from: obra.data_inicio,
-            to: obra.data_conclusao || faker.date.future({ years: 1, refDate: obra.data_inicio })
+            to:
+              obra.data_conclusao ||
+              faker.date.future({ years: 1, refDate: obra.data_inicio }),
           });
           const dataFimVinculo = faker.date.between({
             from: dataInicioVinculo,
-            to: obra.data_conclusao || faker.date.future({ years: 2, refDate: dataInicioVinculo })
+            to:
+              obra.data_conclusao ||
+              faker.date.future({ years: 2, refDate: dataInicioVinculo }),
           });
           await this.obraResponsavelTecnicoModel.create({
             obraId: obra.id,
             responsavelTecnicoId: responsavel.id,
-            tipo_vinculo: faker.helpers.arrayElement(Object.values(TipoVinculoObra)),
+            tipo_vinculo: faker.helpers.arrayElement(
+              Object.values(TipoVinculoObra),
+            ),
             data_inicio: dataInicioVinculo,
             data_fim: dataFimVinculo,
           } as any);
@@ -338,9 +488,15 @@ export class SeedService implements OnModuleInit {
           min: 1,
           max: Math.min(3, fiscalizacoes.length),
         });
-        const selectedFiscalizacoes = faker.helpers.arrayElements(fiscalizacoes, amountToSelect);
+        const selectedFiscalizacoes = faker.helpers.arrayElements(
+          fiscalizacoes,
+          amountToSelect,
+        );
         for (const fiscalizacao of selectedFiscalizacoes) {
-          await this.obrasFiscalizacoesModel.create({ obraId: obra.id, fiscalizacaoId: fiscalizacao.id } as any);
+          await this.obrasFiscalizacoesModel.create({
+            obraId: obra.id,
+            fiscalizacaoId: fiscalizacao.id,
+          } as any);
         }
       }
     }
@@ -349,7 +505,10 @@ export class SeedService implements OnModuleInit {
     for (let j = 0; j < 18; j++) {
       const obraAleatoria = faker.helpers.arrayElement(obras);
       const dataInicioPrevista = faker.date.future({ years: 1 });
-      const dataFimPrevista = faker.date.future({ years: 1, refDate: dataInicioPrevista });
+      const dataFimPrevista = faker.date.future({
+        years: 1,
+        refDate: dataInicioPrevista,
+      });
       const etapaInfo = faker.helpers.arrayElement(etapasPredefinidas);
 
       await this.etapasModel.create({
@@ -357,18 +516,31 @@ export class SeedService implements OnModuleInit {
         descricao: etapaInfo.descricao,
         dataInicioPrevista,
         dataFimPrevista,
-        dataInicioReal: faker.date.between({ from: dataInicioPrevista, to: dataFimPrevista }),
-        dataFimReal: faker.date.between({ from: dataInicioPrevista, to: dataFimPrevista }),
+        dataInicioReal: faker.date.between({
+          from: dataInicioPrevista,
+          to: dataFimPrevista,
+        }),
+        dataFimReal: faker.date.between({
+          from: dataInicioPrevista,
+          to: dataFimPrevista,
+        }),
         status: faker.helpers.arrayElement(Object.values(EtapaStatus)),
         obraId: obraAleatoria.id,
       } as any);
 
       const atividadeObs = faker.helpers.arrayElement(atividadesEObservacoes);
-      const materiaisUsados = faker.helpers.arrayElements(materiaisDeObra, { min: 2, max: 5 }).join(', ');
+      const materiaisUsados = faker.helpers
+        .arrayElements(materiaisDeObra, { min: 2, max: 5 })
+        .join(', ');
 
       const diario = await this.diariosModel.create({
         data: faker.date.recent().toISOString().split('T')[0],
-        clima: faker.helpers.arrayElement(['Ensolarado', 'Nublado', 'Chuvoso', 'Parcialmente Nublado']),
+        clima: faker.helpers.arrayElement([
+          'Ensolarado',
+          'Nublado',
+          'Chuvoso',
+          'Parcialmente Nublado',
+        ]),
         atividadesExecutadas: atividadeObs.atividade,
         materiaisUtilizados: materiaisUsados,
         observacoes: atividadeObs.observacao,
@@ -377,9 +549,15 @@ export class SeedService implements OnModuleInit {
 
       // Criar relacionamentos entre diário de obra e materiais
       if (materiais.length > 0) {
-        const quantidadeMateriais = faker.number.int({ min: 2, max: Math.min(5, materiais.length) });
-        const selectedMateriais = faker.helpers.arrayElements(materiais, quantidadeMateriais);
-        
+        const quantidadeMateriais = faker.number.int({
+          min: 2,
+          max: Math.min(5, materiais.length),
+        });
+        const selectedMateriais = faker.helpers.arrayElements(
+          materiais,
+          quantidadeMateriais,
+        );
+
         for (const material of selectedMateriais) {
           await this.diarioMateriaisModel.create({
             diarioDeObraId: diario.id,
@@ -391,6 +569,8 @@ export class SeedService implements OnModuleInit {
 
     const env = this.configService.get<string>('NODE_ENV');
     const isProd = env === 'production';
-    console.log(`Seed ${isProd ? 'fixa (produção)' : 'aleatória (desenvolvimento)'} gerada com sucesso.`);
+    console.log(
+      `Seed ${isProd ? 'fixa (produção)' : 'aleatória (desenvolvimento)'} gerada com sucesso.`,
+    );
   }
 }
