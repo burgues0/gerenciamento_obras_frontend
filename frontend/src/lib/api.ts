@@ -131,7 +131,6 @@ export class ApiClient {
       throw new Error(errorData.message || 'Erro na requisição');
     }
 
-    // Se for 204 No Content ou body vazio, não tente fazer response.json()
     if (response.status === 204) return null;
     const text = await response.text();
     return text ? JSON.parse(text) : null;
@@ -152,8 +151,6 @@ export class ApiClient {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Erro na requisição');
     }
-
-    // Se for 204 No Content ou body vazio, não tente fazer response.json()
     if (response.status === 204) return null;
     const text = await response.text();
     return text ? JSON.parse(text) : null;
