@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Building2, HardHat, Package, FileText, Factory, ClipboardCheck, ScrollText, BookOpen, ListChecks, Menu } from 'lucide-react';
+import { Building2, HardHat, Package, UserCheck, Factory, ClipboardCheck, ScrollText, Menu } from 'lucide-react';
 
 export default function Sidebar() {
   const [isMinimized, setIsMinimized] = useState(false);
@@ -32,9 +32,12 @@ export default function Sidebar() {
     localStorage.setItem('sidebarMinimized', newState.toString());
   };
 
+  // Determina a altura baseada na rota atual
+  const sidebarHeight = pathname === '/' ? 'h-[90vh]' : 'min-h-screen';
+
   return (
     <aside 
-      className={`${isMinimized ? 'w-16' : 'w-60'} text-white p-4 min-h-screen flex flex-col transition-all duration-300 ease-in-out`} 
+      className={`${isMinimized ? 'w-16' : 'w-48'} text-white p-4 ${sidebarHeight} flex flex-col transition-all duration-300 ease-in-out`} 
       style={{ background: '#2E2E2E' }}
     >
       {isMinimized ? (
@@ -65,7 +68,7 @@ export default function Sidebar() {
               <Menu className="w-5 h-5" />
             </button>
           </div>
-          <ul className="flex-grow overflow-auto space-y-2">
+          <ul className="flex-grow overflow-auto space-y-2 hide-scrollbar">
             <li>
               <Link 
                 href="/obras" 
@@ -140,7 +143,7 @@ export default function Sidebar() {
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 onClick={handleItemClick}
               >
-                <FileText className="w-5 h-5" />
+                <UserCheck className="w-7 h-7" />
                 Responsáveis Técnicos
               </Link>
             </li>
@@ -155,32 +158,6 @@ export default function Sidebar() {
               >
                 <ScrollText className="w-5 h-5" />
                 Relatórios
-              </Link>
-            </li>
-            <li>
-              <Link 
-                href="/diario-obra" 
-                className="flex items-center gap-2 py-2 px-4 rounded-md transition-colors"
-                style={{ transition: 'background-color 0.2s' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#343434'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                onClick={handleItemClick}
-              >
-                <BookOpen className="w-5 h-5" />
-                Diário Obra
-              </Link>
-            </li>
-            <li>
-              <Link 
-                href="/etapas-obra" 
-                className="flex items-center gap-2 py-2 px-4 rounded-md transition-colors"
-                style={{ transition: 'background-color 0.2s' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#343434'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                onClick={handleItemClick}
-              >
-                <ListChecks className="w-5 h-5" />
-                Etapas Obra
               </Link>
             </li>
           </ul>

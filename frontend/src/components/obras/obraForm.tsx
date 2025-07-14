@@ -28,10 +28,8 @@ const nullableNumber = z.preprocess(
 
 export const formSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres."),
-  descricao: z.string().min(10, "Descrição deve ter pelo menos 10 caracteres."),
-  status: z.enum(['Planejada', 'Em andamento', 'Concluída', 'Paralisada'], {
-    errorMap: () => ({ message: "Status inválido." }),
-  }),
+  descricao: z.string().min(10, "Descrição deve ter pelo menos 10 caracteres.").optional(),
+  status: z.string(),
   data_inicio: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de data inválido (YYYY-MM-DD)."),
   data_conclusao: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de data inválido (YYYY-MM-DD).").nullable().optional(),
   orcamento_total: z.preprocess(
@@ -39,29 +37,34 @@ export const formSchema = z.object({
     z.number().positive("Orçamento total deve ser um número positivo.")
   ),
   gastos_atualizados: optionalNumber.refine(val => val === undefined || val >= 0, "Gastos atualizados não podem ser negativos."),
-  percentual_concluido: optionalNumber.refine(val => val === undefined || (val >= 0 && val <= 100), "Percentual concluído deve ser entre 0 e 100."),
+  percentual_concluido: z.preprocess(
+    (val) => Number(val),
+    z.number().min(0, "Percentual não pode ser negativo.").max(100, "Percentual não pode ser maior que 100.")
+  ),
   latitude: nullableNumber.refine(val => val === null || (val >= -90 && val <= 90), "Latitude inválida (-90 a 90)."),
   longitude: nullableNumber.refine(val => val === null || (val >= -180 && val <= 180), "Longitude inválida (-180 a 180)."),
 });
 
+export type FormData = z.infer<typeof formSchema>;
+
 interface ObraFormProps {
   initialData?: Obra;
-  onSubmit: (data: z.infer<typeof formSchema>) => Promise<void>;
+  onSubmit: (data: FormData) => Promise<void>;
   isLoading?: boolean;
 }
 
 export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormProps) {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema) as any,
     defaultValues: initialData ? {
       ...initialData,
       data_inicio: initialData.data_inicio.split('T')[0],
       data_conclusao: initialData.data_conclusao ? initialData.data_conclusao.split('T')[0] : '',
       gastos_atualizados: initialData.gastos_atualizados ?? undefined,
-      percentual_concluido: initialData.percentual_concluido ?? undefined,
+      percentual_concluido: initialData.percentual_concluido ?? 0,
       latitude: initialData.latitude ?? null,
       longitude: initialData.longitude ?? null,
-    } : {
+    } as any : {
       nome: '',
       descricao: '',
       status: 'Planejada',
@@ -69,7 +72,7 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
       data_conclusao: '',
       orcamento_total: 0,
       gastos_atualizados: undefined,
-      percentual_concluido: undefined,
+      percentual_concluido: 0,
       latitude: null,
       longitude: null,
     },
@@ -77,9 +80,9 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-8">
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="nome"
           render={({ field }) => (
             <FormItem>
@@ -92,7 +95,7 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="descricao"
           render={({ field }) => (
             <FormItem>
@@ -105,13 +108,13 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="status"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Status</FormLabel>
               <FormControl>
-                <select {...field} className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <select {...field} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                   <option value="Planejada">Planejada</option>
                   <option value="Em andamento">Em andamento</option>
                   <option value="Concluída">Concluída</option>
@@ -123,7 +126,7 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="data_inicio"
           render={({ field }) => (
             <FormItem>
@@ -136,7 +139,7 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="data_conclusao"
           render={({ field }) => (
             <FormItem>
@@ -149,7 +152,7 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="orcamento_total"
           render={({ field }) => (
             <FormItem>
@@ -168,7 +171,7 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="gastos_atualizados"
           render={({ field }) => (
             <FormItem>
@@ -187,7 +190,7 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="percentual_concluido"
           render={({ field }) => (
             <FormItem>
@@ -206,7 +209,7 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="latitude"
           render={({ field }) => (
             <FormItem>
@@ -225,7 +228,7 @@ export default function ObraForm({ initialData, onSubmit, isLoading }: ObraFormP
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="longitude"
           render={({ field }) => (
             <FormItem>

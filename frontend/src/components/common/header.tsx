@@ -42,7 +42,7 @@ export default function Header() {
         <nav>
           <ul className="flex space-x-4 items-center">
         <li>
-          <a
+          <Link
             href="/"
             className={
           `header-home-link relative transition-colors duration-150 ` +
@@ -50,7 +50,7 @@ export default function Header() {
             }
           >
             Página inicial
-          </a>
+          </Link>
         </li>
         <li><LogoutButton /></li>
           </ul>

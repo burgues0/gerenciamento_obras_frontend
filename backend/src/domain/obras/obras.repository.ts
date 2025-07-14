@@ -18,7 +18,7 @@ export class ObrasRepository {
     return this.obrasModel.findAll({
       include: [
         {
-          association: 'endereco', 
+          association: 'endereco',
           attributes: ['id', 'rua', 'numero','complemento', 'bairro', 'cidade', 'estado', 'cep'],
         },
         {
@@ -36,26 +36,26 @@ export class ObrasRepository {
   }
 
   async findById(id: number): Promise<Obras | null> {
-  return this.obrasModel.findByPk(id, {
-    attributes: { include: ['enderecoId'] }, 
-    include: [
-      {
-        association: 'endereco',
-        attributes: ['id'], 
-      },
-      {
-        association: 'fornecedores',
-        attributes: ['id'],
-        through: { attributes: [] },
-      },
-      {
-        association: 'equipamentos',
-        attributes: ['id'],
-        through: { attributes: [] },
-      },
-    ],
-  });
-}
+    return this.obrasModel.findByPk(id, {
+      attributes: { include: ['enderecoId'] },
+      include: [
+        {
+          association: 'endereco',
+          attributes: ['id'],
+        },
+        {
+          association: 'fornecedores',
+          attributes: ['id'],
+          through: { attributes: [] },
+        },
+        {
+          association: 'equipamentos',
+          attributes: ['id'],
+          through: { attributes: [] },
+        },
+      ],
+    });
+  }
 
   async create(data: CreateObraDto): Promise<Obras> {
     const { fornecedoresId, equipamentosId, ...obraData } = data as any;
@@ -98,22 +98,22 @@ export class ObrasRepository {
   }
 
   async delete(id: number): Promise<boolean> {
-  const obra = await this.obrasModel.findByPk(id);
+    const obra = await this.obrasModel.findByPk(id);
 
-  if (!obra) {
+    if (!obra) {
+      return false;
+    }
+
+    const enderecoId = obra.enderecoId;
+
+    const deletedCount = await this.obrasModel.destroy({ where: { id } });
+
+    if (deletedCount > 0 && enderecoId) {
+      await this.enderecoModel.destroy({ where: { id: enderecoId } });
+      return true;
+    }
+
     return false;
   }
-
-  const enderecoId = obra.enderecoId;
-
-  const deletedCount = await this.obrasModel.destroy({ where: { id } });
-
-  if (deletedCount > 0 && enderecoId) {
-    await this.enderecoModel.destroy({ where: { id: enderecoId } });
-    return true;
-  }
-
-  return false;
-}
   
 }
