@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { materiaisService } from "@/services/materiaisService";
 import { Material, UpdateMaterialDto } from "@/types/materiais";
+import { Edit } from "lucide-react";
 
 interface EditMaterialButtonProps {
   material: Material;
@@ -118,8 +119,8 @@ export default function EditMaterialButton({ material, onSuccess }: EditMaterial
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Editar
+        <Button variant="outline" size="sm" className="p-2 h-8 w-8">
+          <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-white shadow-2xl border-0 p-0" style={{ borderRadius: '0.75rem' }}>

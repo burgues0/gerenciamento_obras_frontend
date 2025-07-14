@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { materiaisService } from "@/services/materiaisService";
+import { Trash2 } from "lucide-react";
 
 interface DeleteMaterialButtonProps {
   materialId: number;
@@ -34,7 +35,9 @@ export default function DeleteMaterialButton({ materialId, onSuccess }: DeleteMa
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" size="sm">Remover</Button>
+        <Button variant="destructive" size="sm" className="p-2 h-8 w-8 bg-red-600 hover:bg-red-700">
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

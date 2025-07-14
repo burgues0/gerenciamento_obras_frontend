@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Material } from "@/types/materiais";
+import { Eye } from "lucide-react";
+import { formatDateTime } from "@/lib/utils";
 
 interface ViewMaterialButtonProps {
   material: Material;
@@ -23,7 +25,9 @@ export default function ViewMaterialButton({ material }: ViewMaterialButtonProps
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Ver</Button>
+        <Button variant="outline" size="sm" className="p-2 h-8 w-8">
+          <Eye className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-white shadow-2xl border-0 p-0" style={{ borderRadius: '0.75rem' }}>
         <DialogHeader className="text-white p-4" style={{ background: '#F1860C', borderRadius: '0.75rem 0.75rem 0 0' }}>
@@ -71,9 +75,6 @@ export default function ViewMaterialButton({ material }: ViewMaterialButtonProps
                   {formatPrice(material.precoUnitario)}
                 </p>
               </div>
-              <div>
-                {/* Campo removido */}
-              </div>
             </div>
 
             {material.descricao && (
@@ -84,6 +85,17 @@ export default function ViewMaterialButton({ material }: ViewMaterialButtonProps
                 </div>
               </div>
             )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Data de Criação</label>
+                <p className="text-sm text-gray-600">{formatDateTime(material.createdAt)}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Última Atualização</label>
+                <p className="text-sm text-gray-600">{formatDateTime(material.updatedAt)}</p>
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>

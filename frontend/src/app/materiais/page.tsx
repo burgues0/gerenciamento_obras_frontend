@@ -7,6 +7,7 @@ import { materiaisService } from "@/services/materiaisService";
 import { Material } from "@/types/materiais";
 import MateriaisDataTable from "@/components/materiais/materiaisDataTable";
 import CreateMaterialButton from "@/components/materiais/createMaterialButton";
+import { Package } from "lucide-react";
 
 export default function MateriaisPage() {
   const [materiais, setMateriais] = useState<Material[]>([]);
@@ -52,7 +53,8 @@ export default function MateriaisPage() {
         {/* Card Principal */}
         <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
           <CardHeader style={{ background: '#2C607A' }} className="text-white rounded-t-lg py-3">
-            <CardTitle className="text-xl font-semibold">
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              <Package className="h-5 w-5" />
               Lista de Materiais
             </CardTitle>
           </CardHeader>
