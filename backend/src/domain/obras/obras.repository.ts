@@ -4,6 +4,8 @@ import { Obras } from './entities/obras.entity';
 import { CreateObraDto } from './dto/create-obra.dto';
 import { UpdateObraDto } from './dto/update-obra.dto';
 import { Endereco } from '../enderecos/entities/endereco.entity';
+import { EtapasDaObra } from '../etapas-da-obra/entities/etapas-da-obra.entity';
+import { DiarioDeObra } from '../diario-de-obra/entities/diario-de-obra.entity';
 
 @Injectable()
 export class ObrasRepository {
@@ -12,6 +14,10 @@ export class ObrasRepository {
     private readonly obrasModel: typeof Obras,
     @InjectModel(Endereco)
     private readonly enderecoModel: typeof Endereco,
+    @InjectModel(EtapasDaObra)
+    private readonly etapasModel: typeof EtapasDaObra,
+    @InjectModel(DiarioDeObra)
+    private readonly diariosModel: typeof DiarioDeObra,
   ) {}
 
   async findAll(): Promise<Obras[]> {
@@ -103,6 +109,9 @@ export class ObrasRepository {
     if (!obra) {
       return false;
     }
+
+    await this.etapasModel.destroy({ where: { obraId: id } });
+    await this.diariosModel.destroy({ where: { obraId: id } });
 
     const enderecoId = obra.enderecoId;
 

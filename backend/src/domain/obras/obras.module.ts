@@ -21,6 +21,10 @@ import { ObrasFiscalizacoes } from '../obra-fiscalizacoes/entities/obras-fiscali
 import { Fiscalizacoes } from '../fiscalizacoes/entities/fiscalizacoes.entity';
 import { Relatorios } from '../relatorios/entities/relatorios.entity';
 import { AuthModule } from '../auth/auth.module';
+import { EtapasDaObra } from '../etapas-da-obra/entities/etapas-da-obra.entity';
+import { EtapasDaObraModule } from '../etapas-da-obra/etapas-da-obra.module';
+import { DiarioDeObra } from '../diario-de-obra/entities/diario-de-obra.entity';
+import { DiarioDeObraModule } from '../diario-de-obra/diario-de-obra.module';
 
 @Module({
   imports: [
@@ -35,15 +39,19 @@ import { AuthModule } from '../auth/auth.module';
       ObraResponsavelTecnico,
       ObrasFiscalizacoes,
       Fiscalizacoes,
-      Relatorios
+      Relatorios,
+      EtapasDaObra,
+      DiarioDeObra
     ]),
     AuthModule,
     forwardRef(() => FornecedoresModule),
     forwardRef(() => EquipamentosModule),
     forwardRef(() => EnderecosModule),
+    EtapasDaObraModule,
+    DiarioDeObraModule
   ],
   controllers: [ObrasController],
   providers: [ObrasService, ObrasRepository],
-  exports: [ObrasRepository, ObrasService], 
+  exports: [ObrasRepository, ObrasService],
 })
 export class ObrasModule {}
