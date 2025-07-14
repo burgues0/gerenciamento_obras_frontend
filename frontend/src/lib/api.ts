@@ -220,3 +220,11 @@ export const FornecedoresService = {
   update: (id: string, data: any, token?: string) => ApiClient.put(`${API_CONFIG.ENDPOINTS.FORNECEDORES}/${id}`, data, true, false, token),
   delete: (id: string, token?: string) => ApiClient.delete(`${API_CONFIG.ENDPOINTS.FORNECEDORES}/${id}`, true, false, token),
 };
+
+export const EquipamentosService = {
+  getAll: (token?: string) => ApiClient.get(API_CONFIG.ENDPOINTS.EQUIPAMENTOS, true, false, token),
+  getById: (id: string, token?: string) => ApiClient.get(`${API_CONFIG.ENDPOINTS.EQUIPAMENTOS}/${id}`, true, false, token),
+  create: (data: any, token?: string) => ApiClient.post(API_CONFIG.ENDPOINTS.EQUIPAMENTOS, data, true, false, token),
+  update: (id: string, data: any, token?: string) => ApiClient.put(`${API_CONFIG.ENDPOINTS.EQUIPAMENTOS}/${id}`, data, true, false, token),
+  delete: (id: string, token?: string) => ApiClient.delete(`${API_CONFIG.ENDPOINTS.EQUIPAMENTOS}/${id}`, true, false, token),
+};
