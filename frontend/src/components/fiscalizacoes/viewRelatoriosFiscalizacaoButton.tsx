@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -60,7 +60,7 @@ export default function ViewRelatoriosFiscalizacaoButton({ fiscalizacao }: ViewR
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadRelatorios = async () => {
+  const loadRelatorios = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -72,7 +72,7 @@ export default function ViewRelatoriosFiscalizacaoButton({ fiscalizacao }: ViewR
     } finally {
       setLoading(false);
     }
-  };
+  }, [fiscalizacao.id]);
 
   useEffect(() => {
     if (isOpen) {

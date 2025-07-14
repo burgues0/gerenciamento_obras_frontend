@@ -23,6 +23,22 @@ export const obrasService = {
     return response.json();
   },
 
+  async getObraById(id: number) {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.OBRAS}/${id}`,
+      {
+        credentials: "include",
+        headers: {
+          ...authHeaders(),
+        },
+      }
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Falha ao buscar obra.");
+    }
+    return response.json();
+  },
+
   async createObra(obraData: any) {
     const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.OBRAS}`, {
       method: 'POST',

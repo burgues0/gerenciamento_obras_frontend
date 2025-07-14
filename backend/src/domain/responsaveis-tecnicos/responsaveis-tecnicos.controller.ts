@@ -109,7 +109,7 @@ export class ResponsaveisTecnicosController
 
   @Get(':id/obras')
   @ApiOperation({ summary: 'Listar todos os vínculos de obras de um responsável técnico' })
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiResponse({ status: 200, description: 'Lista de vínculos retornada com sucesso.', type: [ObraResponsavelTecnico] })
   async findAllVinculoObras(@Param('id') id: number): Promise<ObraResponsavelTecnico[]> 
   {
@@ -118,7 +118,7 @@ export class ResponsaveisTecnicosController
 
   @Get(':id/obras/:obraId')
   @ApiOperation({ summary: 'Buscar vínculo específico entre responsável técnico e obra' })
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiResponse({ status: 200, description: 'Vínculo encontrado com sucesso.', type: ObraResponsavelTecnico })
   async findVinculoObra(@Param('id') responsavelId: number, @Param('obraId') obraId: number ): Promise<ObraResponsavelTecnico> 
   {

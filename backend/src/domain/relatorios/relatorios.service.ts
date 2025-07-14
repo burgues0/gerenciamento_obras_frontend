@@ -28,13 +28,24 @@ export class RelatoriosService {
         const { titulo, dataCriacao } = dto;
         const hoje = new Date();
         const dataRelatorio = new Date(dataCriacao);
+        
+        if (isNaN(dataRelatorio.getTime())) {
+            throw new BadRequestException('Data de criação inválida.');
+        }
+
+        const hojeNormalizada = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+        const dataRelatorioNormalizada = new Date(dataRelatorio.getFullYear(), dataRelatorio.getMonth(), dataRelatorio.getDate());
+
+        if (dataRelatorioNormalizada > hojeNormalizada) {
+            throw new BadRequestException('A data de criação do relatório não pode estar no futuro.');
+        }
+
         const relatoriosExistentes = await this.findByFiscalizacao(fiscalizacaoId);
         const tituloDuplicado = relatoriosExistentes.some(r => r.titulo === titulo);
 
-        if (dataRelatorio > hoje)
-            throw new BadRequestException('A data de criação do relatório não pode estar no futuro.');
-        if (tituloDuplicado && dataRelatorio == hoje)
+        if (tituloDuplicado && dataRelatorioNormalizada.getTime() === hojeNormalizada.getTime()) {
             throw new BadRequestException(`Já existe um relatório com o título "${titulo}" para essa fiscalização.`);
+        }
 
         return await this.relatoriosRepository.create(fiscalizacaoId, dto);
     }

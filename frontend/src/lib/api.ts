@@ -134,6 +134,9 @@ export class ApiClient {
         
         if (!errorMessage) {
           switch (response.status) {
+            case 400:
+              errorMessage = "Dados inválidos na requisição";
+              break;
             case 401:
               errorMessage = "Credenciais inválidas";
               break;

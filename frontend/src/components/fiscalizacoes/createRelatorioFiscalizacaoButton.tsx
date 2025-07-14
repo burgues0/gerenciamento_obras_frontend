@@ -63,22 +63,6 @@ export default function CreateRelatorioFiscalizacaoButton({ fiscalizacao, onSucc
     setError(null);
 
     try {
-      console.log('=== ENVIANDO DADOS PARA BACKEND ===');
-      console.log('URL completa:', `http://localhost:3000/api/relatorios/fiscalizacoes/${fiscalizacao.id}`);
-      console.log('Fiscalização ID:', fiscalizacao.id);
-      console.log('Dados enviados:', {
-        titulo: formData.titulo.trim(),
-        conteudo: formData.conteudo.trim(),
-        dataCriacao: formData.dataCriacao,
-        fiscalizacaoId: fiscalizacao.id
-      });
-      console.log('Dados enviados (JSON):', JSON.stringify({
-        titulo: formData.titulo.trim(),
-        conteudo: formData.conteudo.trim(),
-        dataCriacao: formData.dataCriacao,
-        fiscalizacaoId: fiscalizacao.id
-      }));
-      
       await fiscalizacoesService.createRelatorioFiscalizacao(fiscalizacao.id, {
         titulo: formData.titulo.trim(),
         conteudo: formData.conteudo.trim(),
@@ -95,27 +79,22 @@ export default function CreateRelatorioFiscalizacaoButton({ fiscalizacao, onSucc
       });
       onSuccess();
     } catch (err: unknown) {
-      console.log('=== ERRO CAPTURADO ===');
-      console.log('Tipo do erro:', typeof err);
-      console.log('Erro completo:', err);
-      console.log('Erro stringificado:', JSON.stringify(err, null, 2));
-      
       let errorMessage = "Erro ao criar relatório";
       
       if (err && typeof err === 'object') {
-        if ('data' in err && err.data && typeof err.data === 'object') {
-          const data = err.data as { message?: string };
+        if ('message' in err && err.message && typeof err.message === 'string') {
+          errorMessage = err.message;
+        }
+        else if ('data' in err && err.data && typeof err.data === 'object') {
+          const data = err.data as { message?: string; error?: string };
           if (data.message) {
             errorMessage = data.message;
+          } else if (data.error) {
+            errorMessage = data.error;
           }
-        }
-        // Se não tem data.message, usa message genérico
-        else if ('message' in err && err.message) {
-          errorMessage = String(err.message);
         }
       }
       
-      console.log('Mensagem final:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);

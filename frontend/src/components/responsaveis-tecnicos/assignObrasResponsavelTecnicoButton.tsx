@@ -31,6 +31,8 @@ export default function AssignObrasResponsavelTecnicoButton({ responsavel, onSuc
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [obras, setObras] = useState<Obra[]>([]);
+  const [obrasAssociadas, setObrasAssociadas] = useState<any[]>([]);
+  const [loadingObrasAssociadas, setLoadingObrasAssociadas] = useState(false);
   const [selectedObras, setSelectedObras] = useState<number[]>([]);
   const [vinculos, setVinculos] = useState<Map<number, VinculoObraResponsavel>>(new Map());
   const [filtroObras, setFiltroObras] = useState<string>('');
@@ -38,6 +40,7 @@ export default function AssignObrasResponsavelTecnicoButton({ responsavel, onSuc
   useEffect(() => {
     if (isOpen) {
       loadObras();
+      loadObrasAssociadas();
       setFiltroObras('');
     }
   }, [isOpen]);
@@ -45,18 +48,25 @@ export default function AssignObrasResponsavelTecnicoButton({ responsavel, onSuc
   const loadObras = async () => {
     try {
       const obrasData = await obrasService.getAllObras();
-      console.log('Obras carregadas:', obrasData);
       
-      // Valida se as obras têm IDs válidos
       const obrasValidas = obrasData.filter((obra: Obra) => obra.id && !isNaN(obra.id) && obra.id > 0);
-      if (obrasValidas.length !== obrasData.length) {
-        console.warn('Algumas obras têm IDs inválidos:', obrasData.filter((obra: Obra) => !obra.id || isNaN(obra.id) || obra.id <= 0));
-      }
       
       setObras(obrasValidas);
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message || "Erro ao carregar obras");
+    }
+  };
+
+  const loadObrasAssociadas = async () => {
+    try {
+      setLoadingObrasAssociadas(true);
+      const obrasAssociadasData = await responsaveisTecnicosService.getObrasDoResponsavelTecnico(responsavel.id);
+      setObrasAssociadas(obrasAssociadasData);
+    } catch (err: unknown) {
+      setObrasAssociadas([]);
+    } finally {
+      setLoadingObrasAssociadas(false);
     }
   };
 
@@ -74,9 +84,7 @@ export default function AssignObrasResponsavelTecnicoButton({ responsavel, onSuc
   }, [obras, filtroObras]);
 
   const handleToggleObra = (obraId: number) => {
-    // Valida se o ID é válido antes de processar
     if (!obraId || isNaN(obraId) || obraId <= 0) {
-      console.error('ID de obra inválido:', obraId);
       return;
     }
     
@@ -127,7 +135,7 @@ export default function AssignObrasResponsavelTecnicoButton({ responsavel, onSuc
           throw new Error(`Vínculo não encontrado para a obra ${obraId}`);
         }
         
-        // Valida se todos os campos obrigatórios estão preenchidos
+        
         if (!vinculo.dataInicio || !vinculo.tipoVinculo) {
           const obra = obras.find(o => o.id === obraId);
           throw new Error(`Por favor, preencha os campos obrigatórios para a obra "${obra?.nome || obraId}"`);
@@ -144,10 +152,13 @@ export default function AssignObrasResponsavelTecnicoButton({ responsavel, onSuc
         return vinculoParaEnvio;
       });
       
-      console.log('Vínculos que serão enviados:', vinculosArray);
-      
-      // Atualiza as obras associadas ao responsável técnico
       await responsaveisTecnicosService.assignObrasToResponsavelTecnico(responsavel.id, { vinculos: vinculosArray });
+
+      await loadObrasAssociadas();
+      
+      // Limpa as seleções
+      setSelectedObras([]);
+      setVinculos(new Map());
 
       setIsOpen(false);
       onSuccess();
@@ -177,9 +188,90 @@ export default function AssignObrasResponsavelTecnicoButton({ responsavel, onSuc
         
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-4 p-6 bg-gradient-to-br from-gray-50 to-gray-100">
+          
+          {/* Seção de Obras Associadas */}
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Obras Associadas</h3>
+            
+            {loadingObrasAssociadas ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                <span className="ml-2 text-gray-600">Carregando obras...</span>
+              </div>
+            ) : obrasAssociadas.length > 0 ? (
+              <div className="space-y-3">
+                {obrasAssociadas.map((obra) => (
+                  <div key={obra.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-semibold text-gray-900">{obra.nome}</h4>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        obra.status === 'EM_ANDAMENTO' ? 'bg-blue-100 text-blue-800' :
+                        obra.status === 'CONCLUIDA' ? 'bg-green-100 text-green-800' :
+                        obra.status === 'PAUSADA' ? 'bg-yellow-100 text-yellow-800' :
+                        obra.status === 'CANCELADA' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {obra.status}
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                      <div>
+                        <span className="font-medium text-gray-700">ID:</span>
+                        <span className="ml-1 text-gray-600">{obra.id}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Orçamento:</span>
+                        <span className="ml-1 text-gray-600">
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                          }).format(obra.orcamento_total)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Progresso:</span>
+                        <span className="ml-1 text-gray-600">{obra.percentual_concluido}%</span>
+                      </div>
+                    </div>
+                    
+                    {obra.vinculo && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                          <div>
+                            <span className="font-medium text-gray-700">Tipo Vínculo:</span>
+                            <span className="ml-1 px-2 py-1 rounded text-xs bg-gray-100 text-gray-700">
+                              {obra.vinculo.tipo_vinculo}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">Início:</span>
+                            <span className="ml-1 text-gray-600">
+                              {obra.vinculo.data_inicio ? new Date(obra.vinculo.data_inicio).toLocaleDateString('pt-BR') : '-'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">Fim:</span>
+                            <span className="ml-1 text-gray-600">
+                              {obra.vinculo.data_fim ? new Date(obra.vinculo.data_fim).toLocaleDateString('pt-BR') : 'Sem data fim'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Nenhuma obra associada</p>
+              </div>
+            )}
+          </div>
+
           {/* Seção para adicionar obras */}
           <div>
-            <h3 className="text-lg font-semibold mb-2">Gerenciar Obras</h3>
+            <h3 className="text-lg font-semibold mb-2">Adicionar Obras</h3>
             
             {/* Campo de filtro para pesquisar obras */}
             <div className="mb-3">

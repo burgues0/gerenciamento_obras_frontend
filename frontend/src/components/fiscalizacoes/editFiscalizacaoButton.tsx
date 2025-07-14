@@ -124,10 +124,6 @@ const EditFiscalizacaoButton = ({ fiscalizacao, onSuccess }: EditFiscalizacaoBut
         data?: any;
       };
       
-      console.error('Erro completo:', error);
-      console.error('Status:', error.status);
-      console.error('Data do erro:', error.data);
-      
       let errorMessage = error.message || "Erro ao atualizar fiscalização";
       
       // Se há dados do erro do backend, tenta extrair informações mais específicas

@@ -55,12 +55,10 @@ export default function AssignObrasFiscalizacaoButton({ fiscalizacao, onSuccess 
       // Busca os detalhes da fiscalização que inclui as obras associadas
       const detalhes = await fiscalizacoesService.getFiscalizacaoDetalhes(fiscalizacao.id);
       const obrasAssociadas = detalhes.obras || [];
-      console.log('Obras associadas encontradas:', obrasAssociadas);
       setObrasDaFiscalizacao(obrasAssociadas);
       setSelectedObras(obrasAssociadas.map(obra => obra.id));
     } catch (err: unknown) {
       const error = err as Error;
-      console.error('Erro ao carregar obras da fiscalização:', error);
       setError(error.message || "Erro ao carregar obras da fiscalização");
       setObrasDaFiscalizacao([]);
       setSelectedObras([]);

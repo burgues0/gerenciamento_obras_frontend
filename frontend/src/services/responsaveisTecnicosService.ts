@@ -71,7 +71,6 @@ export const responsaveisTecnicosService = {
         const errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
       } catch {
-        // ignore
       }
       throw new Error(errorMessage);
     }
@@ -108,7 +107,6 @@ export const responsaveisTecnicosService = {
         const errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
       } catch {
-        // ignore
       }
       throw new Error(errorMessage);
     }
@@ -131,7 +129,6 @@ export const responsaveisTecnicosService = {
         const errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
       } catch {
-        // ignore
       }
       throw new Error(errorMessage);
     }
@@ -172,21 +169,20 @@ export const responsaveisTecnicosService = {
         return [];
       }
       
-      const obras: Obra[] = data.map((vinculo: unknown) => {
-        const vincData = vinculo as { obra?: { id: number; nome: string; status: string; data_inicio: string; data_conclusao: string; orcamento_total: number; percentual_concluido: number }; data_inicio?: string; data_fim?: string; tipo_vinculo?: string };
-        if (vincData.obra) {
+      const obras: Obra[] = data.map((vinculo: any) => {
+        if (vinculo.obra) {
           return {
-            id: vincData.obra.id,
-            nome: vincData.obra.nome,
-            status: vincData.obra.status,
-            data_inicio: vincData.obra.data_inicio,
-            data_conclusao: vincData.obra.data_conclusao,
-            orcamento_total: vincData.obra.orcamento_total,
-            percentual_concluido: vincData.obra.percentual_concluido,
+            id: vinculo.obra.id,
+            nome: vinculo.obra.nome,
+            status: vinculo.obra.status,
+            data_inicio: vinculo.obra.data_inicio,
+            data_conclusao: vinculo.obra.data_conclusao,
+            orcamento_total: parseFloat(vinculo.obra.orcamento_total),
+            percentual_concluido: vinculo.obra.percentual_concluido,
             vinculo: {
-              data_inicio: vincData.data_inicio,
-              data_fim: vincData.data_fim,
-              tipo_vinculo: vincData.tipo_vinculo
+              data_inicio: vinculo.data_inicio,
+              data_fim: vinculo.data_fim,
+              tipo_vinculo: vinculo.tipo_vinculo
             }
           } as Obra;
         }

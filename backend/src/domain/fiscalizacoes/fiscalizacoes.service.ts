@@ -52,7 +52,7 @@ export class FiscalizacoesService {
         if (dataInicio > hoje)
             throw new BadRequestException('A fiscalização não pode ter uma data futura.');
         if (dataFim && dataFim < dataInicio)
-            throw new BadRequestException('A data de fim não pode ser anterior ao início da fiscalização.')
+            throw new BadRequestException('A data de fim não pode ser anterior ao início da fiscalização.');
 
         for (const obraId of obraIds) {
             const obra = await Obras.findByPk(obraId);
@@ -66,22 +66,29 @@ export class FiscalizacoesService {
     }
 
     async update(id: number, dto: UpdateFiscalizacoesDto): Promise<Fiscalizacoes> {
-        if (dto.responsavelTecnicoId) {
-            const responsavel = await ResponsavelTecnico.findByPk(dto.responsavelTecnicoId);
-            if (!responsavel || !responsavel.ativo)
-                throw new BadRequestException(`Responsável técnico ID ${dto.responsavelTecnicoId} inválido ou inativo.`);
+        // Verifica se a fiscalização existe
+        const fiscalizacaoExistente = await this.fiscalizacoesRepository.findOne(id);
+        if (!fiscalizacaoExistente) {
+            throw new NotFoundException(`Fiscalização com ID ${id} não encontrada para atualização.`);
         }
 
-        const fiscalizacaoExistente = await this.fiscalizacoesRepository.findOne(id);
-        if (!fiscalizacaoExistente)
-             throw new NotFoundException(`Fiscalização com ID ${id} não encontrada para atualização.`);
+        // Valida responsável técnico se fornecido
+        if (dto.responsavelTecnicoId) {
+            const responsavel = await ResponsavelTecnico.findByPk(dto.responsavelTecnicoId);
+            if (!responsavel || !responsavel.ativo) {
+                throw new BadRequestException(`Responsável técnico ID ${dto.responsavelTecnicoId} inválido ou inativo.`);
+            }
+        }
 
+        // Valida datas
         const dataInicioValidate = dto.data_inicio || fiscalizacaoExistente.data_inicio;
-        const dataFimValidate = dto.data_fim || fiscalizacaoExistente.data_fim;
+        const dataFimValidate = dto.data_fim !== undefined ? dto.data_fim : fiscalizacaoExistente.data_fim;
 
-        if (dataInicioValidate && dataFimValidate && dataFimValidate < dataInicioValidate)
+        if (dataInicioValidate && dataFimValidate && dataFimValidate < dataInicioValidate) {
             throw new BadRequestException('A data de fim não pode ser menor que a data de início.');
+        }
 
+        // Processa atualização das obras se fornecidas
         if (dto.obraIds && dto.obraIds.length > 0) {
             const obrasExistentes = await Obras.findAll({ where: { id: dto.obraIds } });
 
@@ -96,12 +103,14 @@ export class FiscalizacoesService {
             return fiscalizacaoAtualizada;
 
         } else if (dto.obraIds && dto.obraIds.length === 0) {
+            // Remove todas as associações se array vazio for fornecido
             const fiscalizacaoAtualizada = await this.fiscalizacoesRepository.update(id, dto);
             await fiscalizacaoAtualizada.$set('obras', []);
             return fiscalizacaoAtualizada;
         }
 
-        return this.fiscalizacoesRepository.update(id, dto);
+        // Atualização simples sem mudança nas obras
+        return await this.fiscalizacoesRepository.update(id, dto);
     }
 
     async patchStatus(id: number, status: FiscalizacaoStatus): Promise<Fiscalizacoes> {

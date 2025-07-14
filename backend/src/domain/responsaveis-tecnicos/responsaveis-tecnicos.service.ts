@@ -192,7 +192,6 @@ export class ResponsaveisTecnicosService {
       resultados.push(vinculo);
     }
 
-    // Update responsavelTecnico to active if not already
     if (!responsavelExistente.ativo) {
       await this.responsaveisTecnicosRepository.update(responsavelId, {
         ativo: true,
@@ -285,27 +284,14 @@ export class ResponsaveisTecnicosService {
   async findAllVinculosObra(
     responsavelId: number,
   ): Promise<ObraResponsavelTecnico[]> {
-    // Validação do ID do responsável
     this.validarId(responsavelId);
-
-    // Verifica se o responsável existe
     const responsavel = await this.obterResponsavelPorId(responsavelId);
-    console.log(`[DEBUG] Responsável encontrado: ID ${responsavelId}, Nome: ${responsavel.nome}`);
-
-    // Busca todos os vínculos usando o método específico do repositório
-    console.log(`[DEBUG] Buscando vínculos para responsável ID ${responsavelId}...`);
+    
     const vinculos =
       await this.obrasResponsavelTecnicoRepository.buscarVinculosPorResponsavel(
         responsavelId,
       );
 
-    console.log(`[DEBUG] Quantidade de vínculos encontrados: ${vinculos ? vinculos.length : 0}`);
-    
-    if (vinculos && vinculos.length > 0) {
-      console.log(`[DEBUG] Primeiro vínculo:`, JSON.stringify(vinculos[0], null, 2));
-    }
-
-    // Retorna array vazio se não houver vínculos (não lança erro)
     return vinculos || [];
   }
 
@@ -348,13 +334,11 @@ export class ResponsaveisTecnicosService {
         obraId,
       );
 
-      // Check remaining links
       const vinculosRestantes =
         await this.obrasResponsavelTecnicoRepository.buscarVinculosPorResponsavel(
           responsavelId,
         );
 
-      // If no links left, set responsavel to inactive
       if (vinculosRestantes.length === 0) {
         await this.responsaveisTecnicosRepository.update(responsavelId, {
           ativo: false,
@@ -367,7 +351,7 @@ export class ResponsaveisTecnicosService {
     }
   }
 
-  // ============ MÉTODOS AUXILIARES PRIVADOS ============
+  // MÉTODOS AUXILIARES PRIVADOS
 
   private validarId(id: number): void {
     if (!id || id <= 0) {
@@ -610,9 +594,10 @@ export class ResponsaveisTecnicosService {
     dataFim: Date | null,
   ): Promise<ObraResponsavelTecnico> {
     const dadosCriacao = {
-      ...dto,
-      data_inicio: dataInicio.toISOString().split('T')[0],
-      data_fim: dataFim ? dataFim.toISOString().split('T')[0] : undefined,
+      obraId: dto.obraId,
+      dataInicio: dataInicio.toISOString(),
+      dataFim: dataFim ? dataFim.toISOString() : undefined,
+      tipoVinculo: dto.tipoVinculo,
     };
 
     return this.obrasResponsavelTecnicoRepository.criarVinculo(

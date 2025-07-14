@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Fiscalizacao, FiscalizacaoDetalhes } from "@/types/fiscalizacoes";
 import { fiscalizacoesService } from "@/services/fiscalizacoesService";
+import { obrasService } from "@/services/obrasService";
 import { Eye } from "lucide-react";
 import { formatDate, formatDateTime } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ interface ViewFiscalizacaoButtonProps {
 const ViewFiscalizacaoButton = ({ fiscalizacao }: ViewFiscalizacaoButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [detalhes, setDetalhes] = useState<FiscalizacaoDetalhes | null>(null);
+  const [obrasCompletas, setObrasCompletas] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,12 +24,60 @@ const ViewFiscalizacaoButton = ({ fiscalizacao }: ViewFiscalizacaoButtonProps) =
     try {
       setLoading(true);
       setError(null);
-      const data = await fiscalizacoesService.getFiscalizacaoDetalhes(fiscalizacao.id);
-      setDetalhes(data);
+      
+      let detalhesData: FiscalizacaoDetalhes;
+      
+      try {
+        detalhesData = await fiscalizacoesService.getFiscalizacaoDetalhes(fiscalizacao.id);
+      } catch (detalhesError) {
+        const fiscalizacaoBasica = await fiscalizacoesService.getFiscalizacaoById(fiscalizacao.id);
+        detalhesData = {
+          ...fiscalizacaoBasica,
+          obras: [],
+          responsavelTecnico: undefined,
+          responsavel: undefined,
+          relatorios: []
+        } as FiscalizacaoDetalhes;
+      }
+      
+      setDetalhes(detalhesData);
+      
+      if (detalhesData.obras && Array.isArray(detalhesData.obras) && detalhesData.obras.length > 0) {
+        const obrasCompletasPromises = detalhesData.obras.map(async (obra) => {
+          try {
+            if (obra && obra.id) {
+              const obraCompleta = await obrasService.getObraById(obra.id);
+              return obraCompleta;
+            }
+            return obra;
+          } catch (err) {
+            return obra;
+          }
+        });
+        
+        const obrasCompletasData = await Promise.all(obrasCompletasPromises);
+        setObrasCompletas(obrasCompletasData.filter(obra => obra && obra.id));
+      } else if (fiscalizacao.obraId || fiscalizacao.obra_id) {
+        try {
+          const obraId = fiscalizacao.obraId || fiscalizacao.obra_id;
+          if (obraId) {
+            const obraUnica = await obrasService.getObraById(obraId);
+            setObrasCompletas([obraUnica]);
+          } else {
+            setObrasCompletas([]);
+          }
+        } catch (err) {
+          setObrasCompletas([]);
+        }
+      } else {
+        setObrasCompletas([]);
+      }
+      
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message || "Erro ao carregar detalhes");
       setDetalhes(fiscalizacao as FiscalizacaoDetalhes);
+      setObrasCompletas([]);
     } finally {
       setLoading(false);
     }
@@ -46,6 +96,17 @@ const ViewFiscalizacaoButton = ({ fiscalizacao }: ViewFiscalizacaoButtonProps) =
       'concluida': 'Concluída',
     };
     return statusMap[status] || status;
+  };
+
+  const formatRelatorioDate = (relatorio: any) => {
+    const dateString = relatorio.dataCriacao || relatorio.data_criacao;
+    if (!dateString) return 'Não disponível';
+    
+    try {
+      return formatDateTime(dateString);
+    } catch {
+      return 'Data inválida';
+    }
   };
 
   return (
@@ -163,12 +224,13 @@ const ViewFiscalizacaoButton = ({ fiscalizacao }: ViewFiscalizacaoButtonProps) =
                 )}
 
                 {/* Obras Associadas */}
-                {detalhes.obras && detalhes.obras.length > 0 && (
-                  <div className="mt-6 border-t border-gray-200 pt-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Obras Associadas ({detalhes.obras.length})</h3>
-                    
+                <div className="mt-6 border-t border-gray-200 pt-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Obras Associadas</h3>
+                  
+                  {obrasCompletas && obrasCompletas.length > 0 ? (
                     <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3 bg-gray-50">
-                      {detalhes.obras.map((obra) => (
+                      <p className="text-sm text-gray-600 mb-3">Total: {obrasCompletas.length} obra(s)</p>
+                      {obrasCompletas.map((obra) => (
                         <div key={obra.id} className="flex items-center justify-between p-3 bg-white rounded border shadow-sm">
                           <div className="flex-1">
                             <div className="flex items-center gap-3">
@@ -181,19 +243,31 @@ const ViewFiscalizacaoButton = ({ fiscalizacao }: ViewFiscalizacaoButtonProps) =
                                 {obra.status}
                               </span>
                               <span className="text-sm text-gray-500">
-                                {obra.percentual_concluido}% concluído
+                                {obra.percentual_concluido || 0}% concluído
                               </span>
                             </div>
                           </div>
                           <div className="text-right text-sm text-gray-600">
-                            <div>Orçamento: R$ {parseFloat(obra.orcamento_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                            <div>Gastos: R$ {parseFloat(obra.gastos_atualizados).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                            <div>Orçamento: {
+                              obra.orcamento_total && !isNaN(parseFloat(obra.orcamento_total)) 
+                                ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(obra.orcamento_total))
+                                : 'Não informado'
+                            }</div>
+                            <div>Gastos: {
+                              obra.gastos_atualizados && !isNaN(parseFloat(obra.gastos_atualizados))
+                                ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(obra.gastos_atualizados))
+                                : 'Não informado'
+                            }</div>
                           </div>
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="text-center py-4 text-gray-500 border rounded-md bg-gray-50">
+                      <p>Nenhuma obra associada a esta fiscalização</p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Informações do Sistema */}
                 <div className="mt-6 border-t border-gray-200 pt-4">
@@ -228,8 +302,8 @@ const ViewFiscalizacaoButton = ({ fiscalizacao }: ViewFiscalizacaoButtonProps) =
                               <p className="text-sm text-gray-800">{relatorio.titulo}</p>
                             </div>
                             <div>
-                              <label className="text-xs font-medium text-gray-500">Data de Criação</label>
-                              <p className="text-sm text-gray-800">{formatDate(relatorio.data_criacao)}</p>
+                              <label className="text-xs font-medium text-gray-500">Data do Relatório</label>
+                              <p className="text-sm text-gray-800">{formatRelatorioDate(relatorio)}</p>
                             </div>
                           </div>
                         </div>

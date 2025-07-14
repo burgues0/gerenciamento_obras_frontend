@@ -97,6 +97,8 @@ export interface FiscalizacaoDetalhes {
     id: number;
     titulo: string;
     data_criacao: string;
+    dataCriacao?: string;
+    conteudo?: string;
   }[];
 }
 

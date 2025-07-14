@@ -71,12 +71,20 @@ export class FiscalizacoesController {
   @Get(':id/detalhes')
   @ApiOperation({ summary: 'Busca uma fiscalização e suas relações com obras, responsável técnico e relatórios' })
   @ApiResponse({ status: 200, description: 'Detalhes da fiscalização retornados com sucesso', type: Fiscalizacoes })
+  @ApiNotFoundResponse({ description: 'Fiscalização não encontrada' })
   @ApiBadRequestResponse({ description: 'Erro na requisição' })
-  async findDetalhes(@Param('id', ParseIntPipe) id: number): Promise<Fiscalizacoes | null> {
+  async findDetalhes(@Param('id', ParseIntPipe) id: number): Promise<Fiscalizacoes> {
     try {
-      return await this.fiscalizacoesService.findDetalhes(id);
+      const fiscalizacao = await this.fiscalizacoesService.findDetalhes(id);
+      if (!fiscalizacao) {
+        throw new NotFoundException(`Fiscalização com ID ${id} não encontrada.`);
+      }
+      return fiscalizacao;
     } catch (error) {
-      throw new BadRequestException('Erro ao listar fiscalizações detalhadas.');
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(`Erro ao buscar detalhes da fiscalização ${id}. Detalhes: ${error.message}`);
     }
   }
 
@@ -120,7 +128,10 @@ export class FiscalizacoesController {
     try {
       return await this.fiscalizacoesService.update(id, dto);
     } catch (error) {
-      throw new BadRequestException(`Erro ao atualizar fiscalização ${id}.`);
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Erro ao atualizar fiscalização ${id}. Detalhes: ${error.message}`);
     }
   }
 

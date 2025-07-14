@@ -34,8 +34,9 @@ export class RelatoriosController {
         try {
             return await this.relatoriosService.findOne(id);
         } catch (error) {
-            if (error instanceof NotFoundException)
-                throw new NotFoundException(`Relatorio com ID ${id} não encontrado.`);
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
             throw new BadRequestException(`Erro ao buscar relatório com ID ${id}.`);
         }
     }
@@ -61,8 +62,12 @@ export class RelatoriosController {
         try {
             return await this.relatoriosService.create(fiscalizacaoId, dto);
         } catch (error) {
-            if (error instanceof NotFoundException)
-                throw new NotFoundException(`Fiscalização com ID ${fiscalizacaoId} não encontrada.`);
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
             throw new BadRequestException(`Erro ao criar relatório para fiscalização ID ${fiscalizacaoId}.`);
         }
     }
@@ -76,8 +81,12 @@ export class RelatoriosController {
         try {
             return await this.relatoriosService.update(id, dto);
         } catch (error) {
-            if (error instanceof NotFoundException)
-                throw new NotFoundException(`Relatorio com ID ${id} não encontrado.`);
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
             throw new BadRequestException(`Erro ao atualizar relatorio com ID ${id}.`);
         }
     }

@@ -88,7 +88,24 @@ export const fiscalizacoesService = {
   },
 
   async getFiscalizacaoDetalhes(id: number): Promise<FiscalizacaoDetalhes> {
-    return await ApiClient.get(`${API_CONFIG.ENDPOINTS.FISCALIZACOES}/${id}/detalhes`);
+    try {
+      const detalhes = await ApiClient.get(`${API_CONFIG.ENDPOINTS.FISCALIZACOES}/${id}/detalhes`);
+      return detalhes;
+    } catch (error: any) {
+      try {
+        const fiscalizacao = await this.getFiscalizacaoById(id);
+        const fiscalizacaoDetalhes: FiscalizacaoDetalhes = {
+          ...fiscalizacao,
+          obras: Array.isArray(fiscalizacao.obras) ? fiscalizacao.obras : [],
+          responsavelTecnico: typeof fiscalizacao.responsavelTecnico === 'object' ? fiscalizacao.responsavelTecnico : undefined,
+          responsavel: typeof fiscalizacao.responsavel === 'object' ? fiscalizacao.responsavel : undefined,
+          relatorios: Array.isArray(fiscalizacao.relatorios) ? fiscalizacao.relatorios : []
+        };
+        return fiscalizacaoDetalhes;
+      } catch (fallbackError) {
+        throw error;
+      }
+    }
   },
 
   async getFiscalizacoesByStatus(status: string): Promise<Fiscalizacao[]> {
@@ -209,7 +226,6 @@ export const fiscalizacoesService = {
       const response = await ApiClient.post(`${API_CONFIG.ENDPOINTS.RELATORIOS}/fiscalizacoes/${id}`, relatorio);
       return response;
     } catch (error) {
-      // Re-throw o erro para que o componente possa capturar a mensagem do backend
       throw error;
     }
   },

@@ -6,6 +6,7 @@ import { UpdateFiscalizacoesDto } from './dto/update-fiscalizacoes.dto';
 import { Obras } from "../obras/entities/obras.entity";
 import { ResponsavelTecnico } from "../responsaveis-tecnicos/entities/responsavel-tecnico.entity";
 import { ObrasFiscalizacoes } from "../obra-fiscalizacoes/entities/obras-fiscalizacoes.entity";
+import { Relatorios } from "../relatorios/entities/relatorios.entity";
 
 @Injectable()
 export class FiscalizacoesRepository {
@@ -31,7 +32,20 @@ export class FiscalizacoesRepository {
     async findDetalhes(id: number): Promise<Fiscalizacoes | null>{
         return await this.fiscalizacoesModel.findOne({
             where: { id },
-            include: [Obras, ResponsavelTecnico],
+            include: [
+                {
+                    model: Obras,
+                    attributes: ['id', 'nome', 'status', 'data_inicio', 'data_conclusao']
+                },
+                {
+                    model: ResponsavelTecnico,
+                    attributes: ['id', 'nome', 'cpf', 'registro_profissional', 'especialidade', 'ativo']
+                },
+                {
+                    model: Relatorios,
+                    attributes: ['id', 'titulo', 'conteudo', 'dataCriacao']
+                }
+            ],
         })
     }
 
