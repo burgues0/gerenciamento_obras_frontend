@@ -6,6 +6,8 @@ export interface Fornecedor {
   email: string;
   endereco: string;
   ativo: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Obra {

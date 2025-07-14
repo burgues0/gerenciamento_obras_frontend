@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -240,6 +240,49 @@ export default function CreateFornecedorButton({ onSuccess }: CreateFornecedorBu
     }
   };
 
+  const handleButtonSubmit = async () => {
+    setError(null);
+    setFieldErrors({});
+
+    if (!validateForm()) {
+      setError('Todos os campos obrigatórios devem ser preenchidos.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const fornecedorData = {
+        nome: formData.nome,
+        cnpj: formData.cnpj,
+        email: formData.email,
+        telefone: formData.telefone,
+        endereco: formData.endereco,
+        ativo: true,
+        ...(selectedObras.length > 0 && { obrasId: selectedObras })
+      };
+
+      await fornecedoresService.createFornecedor(fornecedorData);
+
+      // Reset form
+      setFormData({
+        nome: '',
+        cnpj: '',
+        telefone: '',
+        email: '',
+        endereco: ''
+      });
+      setSelectedObras([]);
+      setIsOpen(false);
+      onSuccess();
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Erro ao criar fornecedor');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -436,10 +479,7 @@ export default function CreateFornecedorButton({ onSuccess }: CreateFornecedorBu
               type="submit"
               disabled={isLoading}
               className="bg-[#F1860C] hover:bg-[#e07a0b] text-white"
-              onClick={(e) => {
-                e.preventDefault();
-                handleSubmit(e as any);
-              }}
+              onClick={handleButtonSubmit}
             >
               {isLoading ? "Criando..." : "Criar Fornecedor"}
             </Button>

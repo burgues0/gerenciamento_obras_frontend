@@ -10,6 +10,7 @@ import { fornecedoresService } from "@/services/fornecedoresService";
 import { obrasService } from "@/services/obrasService";
 import { Fornecedor, UpdateFornecedorDto } from "@/types/fornecedores";
 import { Obra } from "@/types/obras";
+import { Edit } from "lucide-react";
 
 interface EditFornecedorButtonProps {
   fornecedor: Fornecedor;
@@ -165,11 +166,38 @@ export default function EditFornecedorButton({ fornecedor, onSuccess }: EditForn
     }
   };
 
+  const handleButtonSubmit = async () => {
+    setError(null);
+
+    setIsLoading(true);
+
+    try {
+      const fornecedorData = {
+        nome: formData.nome,
+        cnpj: formData.cnpj,
+        email: formData.email,
+        telefone: formData.telefone,
+        endereco: formData.endereco,
+        ativo: formData.ativo,
+      };
+
+      await fornecedoresService.updateFornecedor(fornecedor.id, fornecedorData);
+
+      setIsOpen(false);
+      onSuccess();
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Erro ao atualizar fornecedor');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Editar
+        <Button variant="outline" size="sm" className="p-2 h-8 w-8">
+          <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-white shadow-2xl border-0 p-0" style={{ borderRadius: '0.75rem' }}>
@@ -326,10 +354,7 @@ export default function EditFornecedorButton({ fornecedor, onSuccess }: EditForn
               type="submit"
               disabled={isLoading}
               className="bg-[#F1860C] hover:bg-[#e07a0b] text-white"
-              onClick={(e) => {
-                e.preventDefault();
-                handleSubmit(e as any);
-              }}
+              onClick={handleButtonSubmit}
             >
               {isLoading ? "Atualizando..." : "Atualizar Fornecedor"}
             </Button>

@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { User, Lock } from "lucide-react";
-import { API_CONFIG } from "@/lib/config";
 import { AuthService } from "@/lib/api";
 
 // Salva o token no localStorage também, para compatibilidade com o novo serviço
@@ -20,7 +19,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,19 +31,20 @@ export default function LoginPage() {
       setAuthToken(data.token);
       const redirectTo = searchParams.get("redirect") || "/";
       window.location.href = redirectTo;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as Error & { status?: number; statusText?: string; data?: unknown };
       console.error('Erro de autenticação:', {
-        message: err.message,
-        status: err.status,
-        statusText: err.statusText,
-        data: err.data,
-        fullError: err
+        message: error.message,
+        status: error.status,
+        statusText: error.statusText,
+        data: error.data,
+        fullError: error
       });
       
-      if (err.message && !err.message.includes('Erro HTTP')) {
-        setError(err.message);
+      if (error.message && !error.message.includes('Erro HTTP')) {
+        setError(error.message);
       } else {
-        switch (err.status) {
+        switch (error.status) {
           case 401:
             setError("Credenciais inválidas. Verifique seu email e senha.");
             break;

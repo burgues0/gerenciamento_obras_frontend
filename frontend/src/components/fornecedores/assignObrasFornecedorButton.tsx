@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { fornecedoresService } from "@/services/fornecedoresService";
 import { obrasService } from "@/services/obrasService";
 import { Fornecedor, Obra } from "@/types/fornecedores";
+import { Building2 } from "lucide-react";
 
 interface AssignObrasFornecedorButtonProps {
   fornecedor: Fornecedor;
@@ -88,7 +89,9 @@ export default function AssignObrasFornecedorButton({ fornecedor, onSuccess }: A
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Obras</Button>
+        <Button variant="outline" size="sm" className="p-2 h-8 w-8">
+          <Building2 className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-white shadow-2xl border-0 p-0" style={{ borderRadius: '0.75rem' }}>
         <DialogHeader className="text-white p-4" style={{ background: '#F1860C', borderRadius: '0.75rem 0.75rem 0 0' }}>

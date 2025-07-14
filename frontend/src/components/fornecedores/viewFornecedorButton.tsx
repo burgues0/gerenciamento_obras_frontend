@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Fornecedor } from "@/types/fornecedores";
 import { Badge } from "@/components/ui/badge";
+import { Eye } from "lucide-react";
+import { formatDateTime } from "@/lib/utils";
 
 interface ViewFornecedorButtonProps {
   fornecedor: Fornecedor;
@@ -16,7 +18,9 @@ export default function ViewFornecedorButton({ fornecedor }: ViewFornecedorButto
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Ver</Button>
+        <Button variant="outline" size="sm" className="p-2 h-8 w-8">
+          <Eye className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-white shadow-2xl border-0 p-0" style={{ borderRadius: '0.75rem' }}>
         <DialogHeader className="text-white p-4" style={{ background: '#F1860C', borderRadius: '0.75rem 0.75rem 0 0' }}>
@@ -69,6 +73,17 @@ export default function ViewFornecedorButton({ fornecedor }: ViewFornecedorButto
               <div>
                 <label className="text-sm font-medium">Endereço</label>
                 <p className="text-sm text-gray-600">{fornecedor.endereco}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Data de Criação</label>
+                <p className="text-sm text-gray-600">{formatDateTime(fornecedor.createdAt)}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Última Atualização</label>
+                <p className="text-sm text-gray-600">{formatDateTime(fornecedor.updatedAt)}</p>
               </div>
             </div>
           </div>
