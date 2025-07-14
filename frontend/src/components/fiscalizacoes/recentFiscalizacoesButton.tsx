@@ -31,7 +31,7 @@ interface RecentFiscalizacoesButtonProps {
   onSuccess?: () => void;
 }
 
-export default function RecentFiscalizacoesButton() {
+export default function RecentFiscalizacoesButton({ onSuccess }: RecentFiscalizacoesButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [fiscalizacoes, setFiscalizacoes] = useState<Fiscalizacao[]>([]);
   const [loading, setLoading] = useState(false);

@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fiscalizacoesService } from "@/services/fiscalizacoesService";
+import { obrasService } from "@/services/obrasService";
+import { responsaveisTecnicosService } from "@/services/responsaveisTecnicosService";
 import { CreateFiscalizacaoDto } from "@/types/fiscalizacoes";
 import { Plus } from "lucide-react";
 
@@ -18,14 +20,66 @@ const CreateFiscalizacaoButton = ({ onSuccess }: CreateFiscalizacaoButtonProps) 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [obras, setObras] = useState<Array<{id: number; nome: string}>>([]);
+  const [responsaveis, setResponsaveis] = useState<Array<{id: number; nome: string; especialidade: string}>>([]);
+  const [loadingObras, setLoadingObras] = useState(false);
+  const [loadingResponsaveis, setLoadingResponsaveis] = useState(false);
+  const [filtroObras, setFiltroObras] = useState<string>('');
+  const [obraSelecionada, setObraSelecionada] = useState<{id: number; nome: string} | null>(null);
   const [formData, setFormData] = useState<CreateFiscalizacaoDto>({
     titulo: '',
+    descricao: '',
     data_inicio: '',
     data_fim: '',
-    status: 'pendente',
+    status: 'planejada',
     responsavelTecnicoId: 0,
     obraId: undefined
   });
+
+  const loadData = async () => {
+    setLoadingObras(true);
+    setLoadingResponsaveis(true);
+    
+    try {
+      const [obrasData, responsaveisData] = await Promise.all([
+        obrasService.getAllObras(),
+        responsaveisTecnicosService.getAllResponsaveisTecnicos()
+      ]);
+      
+      setObras(obrasData);
+      setResponsaveis(responsaveisData);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || "Erro ao carregar dados");
+    } finally {
+      setLoadingObras(false);
+      setLoadingResponsaveis(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadData();
+    }
+  }, [isOpen]);
+
+  const obrasDisponiveis = useMemo(() => {
+    if (!filtroObras.trim()) {
+      return obras;
+    }
+
+    const filtroLowerCase = filtroObras.toLowerCase().trim();
+    return obras.filter(obra => 
+      obra.nome.toLowerCase().includes(filtroLowerCase) ||
+      obra.id.toString().includes(filtroLowerCase)
+    );
+  }, [obras, filtroObras]);
+
+  const handleObraSelect = (obra: {id: number; nome: string}) => {
+    setObraSelecionada(obra);
+    handleInputChange('obraId', obra.id);
+    setFiltroObras(`${obra.nome} (ID: ${obra.id})`);
+  };
 
   const handleInputChange = (field: keyof CreateFiscalizacaoDto, value: string | number | undefined) => {
     setFormData(prev => ({
@@ -42,12 +96,15 @@ const CreateFiscalizacaoButton = ({ onSuccess }: CreateFiscalizacaoButtonProps) 
   const resetForm = () => {
     setFormData({
       titulo: '',
+      descricao: '',
       data_inicio: '',
       data_fim: '',
-      status: 'pendente',
+      status: 'planejada',
       responsavelTecnicoId: 0,
       obraId: undefined
     });
+    setFiltroObras('');
+    setObraSelecionada(null);
     setError(null);
   };
 
@@ -86,8 +143,8 @@ const CreateFiscalizacaoButton = ({ onSuccess }: CreateFiscalizacaoButtonProps) 
       return false;
     }
 
-    if (formData.obraId && formData.obraId <= 0) {
-      setError("O ID da obra deve ser um número positivo");
+    if (!formData.obraId || formData.obraId <= 0 || !obraSelecionada) {
+      setError("É necessário selecionar uma obra da lista");
       return false;
     }
 
@@ -105,16 +162,20 @@ const CreateFiscalizacaoButton = ({ onSuccess }: CreateFiscalizacaoButtonProps) 
     setError(null);
     
     try {
-      const dataToSubmit: CreateFiscalizacaoDto = {
+      const dataToSubmit: Omit<CreateFiscalizacaoDto, 'obraId'> = {
         titulo: formData.titulo.trim(),
+        descricao: formData.descricao?.trim() || undefined,
         data_inicio: formData.data_inicio,
         data_fim: formData.data_fim,
         status: formData.status,
-        responsavelTecnicoId: formData.responsavelTecnicoId,
-        obraId: formData.obraId || undefined
+        responsavelTecnicoId: formData.responsavelTecnicoId
       };
 
-      await fiscalizacoesService.createFiscalizacao(dataToSubmit);
+      if (formData.obraId) {
+        await fiscalizacoesService.createFiscalizacaoParaObra(formData.obraId, dataToSubmit);
+      } else {
+        throw new Error("Obra é obrigatória");
+      }
       
       setIsOpen(false);
       resetForm();
@@ -137,7 +198,7 @@ const CreateFiscalizacaoButton = ({ onSuccess }: CreateFiscalizacaoButtonProps) 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="bg-[#F1860C] hover:bg-[#d6730a] text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200">
+        <Button>
           <Plus className="mr-2 h-5 w-5" />
           Nova Fiscalização
         </Button>
@@ -164,6 +225,20 @@ const CreateFiscalizacaoButton = ({ onSuccess }: CreateFiscalizacaoButtonProps) 
                   onChange={(e) => handleInputChange('titulo', e.target.value)}
                   className="border-slate-300 focus:border-[#F1860C] focus:ring-[#F1860C]/20 bg-white"
                   required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="descricao" className="text-sm font-medium">
+                  Descrição
+                </Label>
+                <textarea
+                  id="descricao"
+                  placeholder="Digite uma descrição para a fiscalização..."
+                  value={formData.descricao || ''}
+                  onChange={(e) => handleInputChange('descricao', e.target.value)}
+                  className="w-full min-h-[80px] px-3 py-2 border border-slate-300 rounded-md focus:border-[#F1860C] focus:ring-[#F1860C]/20 bg-white resize-vertical"
+                  rows={3}
                 />
               </div>
 
@@ -214,34 +289,104 @@ const CreateFiscalizacaoButton = ({ onSuccess }: CreateFiscalizacaoButtonProps) 
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">              <Label htmlFor="responsavelTecnicoId" className="text-sm font-medium">
-                ID do Responsável *
-              </Label>
-              <Input
-                id="responsavelTecnicoId"
-                type="number"
-                placeholder="Digite o ID do responsável..."
-                value={formData.responsavelTecnicoId || ''}
-                onChange={(e) => handleInputChange('responsavelTecnicoId', e.target.value ? parseInt(e.target.value) : 0)}
-                className="border-slate-300 focus:border-[#F1860C] focus:ring-[#F1860C]/20 bg-white"
-                required
-                min="1"
-              />
+                <div className="space-y-2">
+                  <Label htmlFor="responsavelTecnicoId" className="text-sm font-medium">
+                    Responsável Técnico *
+                  </Label>
+                  {loadingResponsaveis ? (
+                    <div className="flex items-center justify-center py-2 border rounded bg-gray-50">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500 mr-2"></div>
+                      <span className="text-sm text-gray-600">Carregando...</span>
+                    </div>
+                  ) : (
+                    <Select 
+                      value={formData.responsavelTecnicoId ? formData.responsavelTecnicoId.toString() : ''} 
+                      onValueChange={(value) => handleInputChange('responsavelTecnicoId', parseInt(value))}
+                    >
+                      <SelectTrigger className="border-slate-300 focus:border-[#F1860C] focus:ring-[#F1860C]/20 bg-white">
+                        <SelectValue placeholder="Selecione o responsável técnico" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {responsaveis.map((responsavel) => (
+                          <SelectItem key={responsavel.id} value={responsavel.id.toString()}>
+                            {responsavel.nome} - {responsavel.especialidade}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="obraId" className="text-sm font-medium">
-                    ID da Obra (Opcional)
+                    Obra *
                   </Label>
-                  <Input
-                    id="obraId"
-                    type="number"
-                    placeholder="Digite o ID da obra..."
-                    value={formData.obraId || ''}
-                    onChange={(e) => handleInputChange('obraId', e.target.value ? parseInt(e.target.value) : undefined)}
-                    className="border-slate-300 focus:border-[#F1860C] focus:ring-[#F1860C]/20 bg-white"
-                    min="1"
-                  />
+                  {loadingObras ? (
+                    <div className="flex items-center justify-center py-2 border rounded bg-gray-50">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500 mr-2"></div>
+                      <span className="text-sm text-gray-600">Carregando...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Digite o nome ou ID da obra..."
+                        value={filtroObras}
+                        onChange={(e) => {
+                          setFiltroObras(e.target.value);
+                          if (!e.target.value) {
+                            setObraSelecionada(null);
+                            handleInputChange('obraId', undefined);
+                          }
+                        }}
+                        className="border-slate-300 focus:border-[#F1860C] focus:ring-[#F1860C]/20 bg-white"
+                      />
+                      {filtroObras && !obraSelecionada && obrasDisponiveis.length > 0 && (
+                        <div className="max-h-40 overflow-y-auto border border-slate-300 rounded-md bg-white shadow-sm">
+                          {obrasDisponiveis.slice(0, 5).map((obra) => (
+                            <div
+                              key={obra.id}
+                              className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                              onClick={() => handleObraSelect(obra)}
+                            >
+                              <div className="text-sm font-medium text-gray-900">{obra.nome}</div>
+                              <div className="text-xs text-gray-500">ID: {obra.id}</div>
+                            </div>
+                          ))}
+                          {obrasDisponiveis.length > 5 && (
+                            <div className="px-3 py-2 text-xs text-gray-500 text-center border-t border-gray-200">
+                              ... e mais {obrasDisponiveis.length - 5} obra(s). Continue digitando para refinar.
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {filtroObras && obrasDisponiveis.length === 0 && (
+                        <div className="px-3 py-2 text-sm text-gray-500 text-center border border-slate-300 rounded-md bg-gray-50">
+                          Nenhuma obra encontrada
+                        </div>
+                      )}
+                      {obraSelecionada && (
+                        <div className="px-3 py-2 bg-green-50 border border-green-200 rounded-md">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-sm font-medium text-green-900">Obra selecionada:</div>
+                              <div className="text-sm text-green-700">{obraSelecionada.nome} (ID: {obraSelecionada.id})</div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setObraSelecionada(null);
+                                setFiltroObras('');
+                                handleInputChange('obraId', undefined);
+                              }}
+                              className="text-green-600 hover:text-green-800 text-sm underline"
+                            >
+                              Alterar
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -6,7 +6,9 @@ import AppLayout from '@/components/layout-components/applayout';
 import { fiscalizacoesService } from "@/services/fiscalizacoesService";
 import { Fiscalizacao } from "@/types/fiscalizacoes";
 import FiscalizacoesDataTable from "@/components/fiscalizacoes/fiscalizacoesDataTable";
+import CreateFiscalizacaoButton from "@/components/fiscalizacoes/createFiscalizacaoButton";
 import RecentFiscalizacoesButton from "@/components/fiscalizacoes/recentFiscalizacoesButton";
+import { DeleteFiscalizacoesObraPageButton } from "@/components/fiscalizacoes/deleteFiscalizacoesObraPageButton";
 import { ClipboardCheck } from "lucide-react";
 
 export default function FiscalizacoesPage() {
@@ -58,6 +60,8 @@ export default function FiscalizacoesPage() {
           </div>
           <div className="flex gap-3">
             <RecentFiscalizacoesButton onSuccess={handleSuccess} />
+            <DeleteFiscalizacoesObraPageButton onSuccess={handleSuccess} />
+            <CreateFiscalizacaoButton onSuccess={handleSuccess} />
           </div>
         </div>
 

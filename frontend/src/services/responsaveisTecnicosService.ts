@@ -223,4 +223,54 @@ export const responsaveisTecnicosService = {
     
     return response.json();
   },
+
+  async getVinculoEspecifico(responsavelId: number, obraId: number): Promise<any> {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}/${responsavelId}/obras/${obraId}`, {
+      credentials: "include",
+      headers: {
+        ...authHeaders(),
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Falha ao buscar vínculo específico.");
+    }
+    
+    return response.json();
+  },
+
+  async updateVinculoEspecifico(responsavelId: number, obraId: number, vinculo: any): Promise<any> {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}/${responsavelId}/obras/${obraId}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+      body: JSON.stringify(vinculo),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Falha ao atualizar vínculo específico.");
+    }
+    
+    return response.json();
+  },
+
+  async removeVinculoEspecifico(responsavelId: number, obraId: number): Promise<void> {
+    const response = await fetch(`${API_CONFIG.OBRAS_BASE_URL}${API_CONFIG.ENDPOINTS.RESPONSAVEIS_TECNICOS}/${responsavelId}/obras/${obraId}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        ...authHeaders(),
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Falha ao remover vínculo específico.");
+    }
+  },
 };

@@ -582,6 +582,7 @@ export const ObrasService = {
   updateEndereco: (id: string, data: any, token?: string) => ApiClient.put(`/obras/${id}/endereco`, data, true, false, token),
   getFornecedores: (id: string, token?: string) => ApiClient.get(`/obras/${id}/fornecedores`, true, false, token),
   getEquipamentos: (id: string, token?: string) => ApiClient.get(`/obras/${id}/equipamentos`, true, false, token),
+  getResponsaveisTecnicos: (id: string, token?: string) => ApiClient.get(`/responsaveis-tecnicos/obras/${id}`, true, false, token),
   getFiscalizacoes: (id: string, token?: string) => ApiClient.get(`/fiscalizacoes/obras/${id}/fiscalizacoes`, true, false, token),
   deleteFiscalizacoes: (id: string, token?: string) => ApiClient.delete(`/fiscalizacoes/obras/${id}/fiscalizacoes`, true, false, token),
   createFiscalizacao: (data: any, token?: string) => ApiClient.post(`/fiscalizacoes/obras/fiscalizacao`, data, true, false, token),

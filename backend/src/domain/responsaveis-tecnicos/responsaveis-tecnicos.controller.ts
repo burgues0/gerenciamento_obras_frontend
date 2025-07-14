@@ -19,7 +19,7 @@ import { UpdateVinculoObraDto } from '../obra-responsavel-tecnico/dto/update-obr
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiBearerAuth('access-token')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @ApiTags('Responsaveis Tecnicos')
 @Controller('responsaveis-tecnicos')
 export class ResponsaveisTecnicosController 

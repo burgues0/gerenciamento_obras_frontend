@@ -135,6 +135,30 @@ export const fiscalizacoesService = {
     return normalizeFiscalizacao(response);
   },
 
+  async createFiscalizacaoParaObra(obraId: number, fiscalizacao: Omit<CreateFiscalizacaoDto, 'obraId'>): Promise<Fiscalizacao> {
+    // Mapear status se estiver presente
+    const updatedFiscalizacao = fiscalizacao.status ? 
+      { ...fiscalizacao, status: mapStatusToBackend(fiscalizacao.status) } : 
+      fiscalizacao;
+    
+    const response = await ApiClient.post(`/fiscalizacoes/obras/fiscalizacao`, {
+      ...updatedFiscalizacao,
+      obraIds: [obraId]
+    });
+    
+    // Se não há resposta (204 No Content), retorna um objeto com os dados criados
+    if (!response) {
+      return {
+        id: Date.now(), // ID temporário
+        ...updatedFiscalizacao,
+        obraId,
+        createdAt: new Date().toISOString(),
+      } as Fiscalizacao;
+    }
+    
+    return normalizeFiscalizacao(response);
+  },
+
   async updateFiscalizacao(id: number, fiscalizacao: UpdateFiscalizacaoDto): Promise<Fiscalizacao> {
     if (!id || id === 0 || isNaN(id) || id === undefined || id === null) {
       throw new Error(`ID da fiscalização inválido: ${id}. Não é possível atualizar a fiscalização.`);
@@ -214,6 +238,45 @@ export const fiscalizacoesService = {
 
   async deleteFiscalizacao(id: number): Promise<void> {
     await ApiClient.delete(`${API_CONFIG.ENDPOINTS.FISCALIZACOES}/${id}`);
+  },
+
+  async deleteFiscalizacoesByObra(obraId: number): Promise<void> {
+    try {
+      // Primeiro tenta buscar as fiscalizações da obra para verificar se existem
+      const fiscalizacoes = await this.getAllFiscalizacoes();
+      const fiscalizacoesDaObra = fiscalizacoes.filter(f => f.obraId === obraId);
+      
+      if (fiscalizacoesDaObra.length === 0) {
+        // Se não há fiscalizações, não há nada para excluir
+        return;
+      }
+      
+      // Tenta excluir usando o endpoint específico
+      try {
+        await ApiClient.delete(`${API_CONFIG.ENDPOINTS.FISCALIZACOES}/obras/${obraId}/fiscalizacoes`);
+        return;
+      } catch (endpointError: any) {
+        console.warn('Endpoint específico falhou, tentando exclusão individual:', endpointError.message);
+        
+        // Se o endpoint específico falhar, exclui cada fiscalização individualmente
+        for (const fiscalizacao of fiscalizacoesDaObra) {
+          try {
+            await this.deleteFiscalizacao(fiscalizacao.id);
+          } catch (deleteError: any) {
+            console.error(`Erro ao excluir fiscalização ${fiscalizacao.id}:`, deleteError.message);
+          }
+        }
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || `Erro ao excluir fiscalizações da obra com ID ${obraId}`;
+      console.error('Erro detalhado ao excluir fiscalizações da obra:', {
+        obraId,
+        error: error.message,
+        status: error.status,
+        data: error.data
+      });
+      throw new Error(errorMessage);
+    }
   },
 
   async getRelatoriosFiscalizacao(id: number): Promise<Relatorio[]> {
